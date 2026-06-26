@@ -67,7 +67,11 @@ pub fn GuaranteedThirdsPage() -> impl IntoView {
                             let guaranteed = sim.teams.iter().filter(|t| t.total_qualification_pct == 100.0).count();
                             let eliminated = sim.teams.iter().filter(|t| t.total_qualification_pct == 0.0).count();
                             let uncertain = sim.teams.len() - guaranteed - eliminated;
-                            format!("Garantidos: {guaranteed} | Incertos: {uncertain} | Desqualificados: {eliminated}")
+                            view! {
+                                <span class="badge guaranteed-badge">{"Garantidos: "}{guaranteed}</span>
+                                <span class="badge uncertain-badge">{"Incertos: "}{uncertain}</span>
+                                <span class="badge eliminated-badge">{"Desqualificados: "}{eliminated}</span>
+                            }
                         }</p>
                     }.into_any(),
                     Err(e) => view! { <p class="error">Erro: {e}</p> }.into_any(),

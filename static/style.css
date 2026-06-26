@@ -338,6 +338,12 @@ tr.qualified td:nth-child(2) {
     border-radius: 8px;
 }
 
+.loading {
+    color: #64748b;
+    padding: 2rem;
+    text-align: center;
+}
+
 h4 {
     color: #94a3b8;
     font-size: 0.85rem;
@@ -347,4 +353,96 @@ h4 {
 
 .matches-table td {
     font-size: 0.8rem;
+}
+
+/* ── Probability Table ─────────────────────── */
+
+.prob-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.prob-table td,
+.prob-table th {
+    padding: 0.3rem 0.5rem;
+    text-align: right;
+}
+
+.prob-table th {
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+}
+
+.prob-table td:first-child,
+.prob-table th:first-child {
+    text-align: left;
+}
+
+.prob-table td:nth-child(2),
+.prob-table th:nth-child(2) {
+    text-align: center;
+}
+
+tr.guaranteed {
+    background: #064e3b;
+}
+
+tr.guaranteed td:first-child {
+    color: #4ade80;
+    font-weight: 600;
+}
+
+tr.guaranteed td.total {
+    color: #4ade80;
+    font-weight: 700;
+}
+
+tr.eliminated {
+    opacity: 0.4;
+    text-decoration: line-through;
+}
+
+tr.eliminated td.total {
+    color: #f87171;
+}
+
+td.total {
+    font-weight: 700;
+    color: #38bdf8;
+}
+
+.summary {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.badge {
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.guaranteed-badge {
+    background: #064e3b;
+    color: #4ade80;
+    border: 1px solid #065f46;
+}
+
+.uncertain-badge {
+    background: #1e293b;
+    color: #38bdf8;
+    border: 1px solid #334155;
+}
+
+.eliminated-badge {
+    background: #451a03;
+    color: #f87171;
+    border: 1px solid #78350f;
 }
