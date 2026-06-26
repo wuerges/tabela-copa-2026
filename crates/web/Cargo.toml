@@ -1,0 +1,12 @@
+[package]
+name = "copa2026-web"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+# TODO: Implement Leptos web app
+# Dependencies will include:
+# leptos, leptos_axum, leptos_router, axum, tower-http
+
+[dependencies]
+copa2026-core = { path = "../core" }
