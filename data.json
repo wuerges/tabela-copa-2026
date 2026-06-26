@@ -1,197 +1,209 @@
 {
-  "L": [
+  "A": [
     {
-      "id": "L-1",
-      "group": "L",
+      "id": "A-1",
+      "group": "A",
       "home_team": {
-        "name": "England",
-        "fifa_code": "ENG"
+        "name": "Mexico",
+        "fifa_code": "MEX"
       },
       "away_team": {
-        "name": "Croatia",
-        "fifa_code": "CRO"
-      },
-      "result": {
-        "home_goals": 4,
-        "away_goals": 2
-      },
-      "date": null
-    },
-    {
-      "id": "L-2",
-      "group": "L",
-      "home_team": {
-        "name": "Ghana",
-        "fifa_code": "GHA"
-      },
-      "away_team": {
-        "name": "Panama",
-        "fifa_code": "PAN"
-      },
-      "result": {
-        "home_goals": 1,
-        "away_goals": 0
-      },
-      "date": null
-    },
-    {
-      "id": "L-3",
-      "group": "L",
-      "home_team": {
-        "name": "England",
-        "fifa_code": "ENG"
-      },
-      "away_team": {
-        "name": "Ghana",
-        "fifa_code": "GHA"
-      },
-      "result": {
-        "home_goals": 0,
-        "away_goals": 0
-      },
-      "date": null
-    },
-    {
-      "id": "L-4",
-      "group": "L",
-      "home_team": {
-        "name": "Panama",
-        "fifa_code": "PAN"
-      },
-      "away_team": {
-        "name": "Croatia",
-        "fifa_code": "CRO"
-      },
-      "result": {
-        "home_goals": 0,
-        "away_goals": 1
-      },
-      "date": null
-    },
-    {
-      "id": "L-5",
-      "group": "L",
-      "home_team": {
-        "name": "Panama",
-        "fifa_code": "PAN"
-      },
-      "away_team": {
-        "name": "England",
-        "fifa_code": "ENG"
-      },
-      "result": null,
-      "date": null
-    },
-    {
-      "id": "L-6",
-      "group": "L",
-      "home_team": {
-        "name": "Croatia",
-        "fifa_code": "CRO"
-      },
-      "away_team": {
-        "name": "Ghana",
-        "fifa_code": "GHA"
-      },
-      "result": null,
-      "date": null
-    }
-  ],
-  "G": [
-    {
-      "id": "G-1",
-      "group": "G",
-      "home_team": {
-        "name": "Belgium",
-        "fifa_code": "BEL"
-      },
-      "away_team": {
-        "name": "Egypt",
-        "fifa_code": "EGY"
-      },
-      "result": {
-        "home_goals": 1,
-        "away_goals": 1
-      },
-      "date": null
-    },
-    {
-      "id": "G-2",
-      "group": "G",
-      "home_team": {
-        "name": "Iran",
-        "fifa_code": "IRN"
-      },
-      "away_team": {
-        "name": "New Zealand",
-        "fifa_code": "NZL"
+        "name": "South Africa",
+        "fifa_code": "RSA"
       },
       "result": {
         "home_goals": 2,
-        "away_goals": 2
-      },
-      "date": null
-    },
-    {
-      "id": "G-3",
-      "group": "G",
-      "home_team": {
-        "name": "Belgium",
-        "fifa_code": "BEL"
-      },
-      "away_team": {
-        "name": "Iran",
-        "fifa_code": "IRN"
-      },
-      "result": {
-        "home_goals": 0,
         "away_goals": 0
       },
       "date": null
     },
     {
-      "id": "G-4",
-      "group": "G",
+      "id": "A-2",
+      "group": "A",
       "home_team": {
-        "name": "New Zealand",
-        "fifa_code": "NZL"
+        "name": "South Korea",
+        "fifa_code": "KOR"
       },
       "away_team": {
-        "name": "Egypt",
-        "fifa_code": "EGY"
+        "name": "Czech Republic",
+        "fifa_code": "CZE"
+      },
+      "result": {
+        "home_goals": 2,
+        "away_goals": 1
+      },
+      "date": null
+    },
+    {
+      "id": "A-3",
+      "group": "A",
+      "home_team": {
+        "name": "Czech Republic",
+        "fifa_code": "CZE"
+      },
+      "away_team": {
+        "name": "South Africa",
+        "fifa_code": "RSA"
       },
       "result": {
         "home_goals": 1,
+        "away_goals": 1
+      },
+      "date": null
+    },
+    {
+      "id": "A-4",
+      "group": "A",
+      "home_team": {
+        "name": "Mexico",
+        "fifa_code": "MEX"
+      },
+      "away_team": {
+        "name": "South Korea",
+        "fifa_code": "KOR"
+      },
+      "result": {
+        "home_goals": 1,
+        "away_goals": 0
+      },
+      "date": null
+    },
+    {
+      "id": "A-5",
+      "group": "A",
+      "home_team": {
+        "name": "Czech Republic",
+        "fifa_code": "CZE"
+      },
+      "away_team": {
+        "name": "Mexico",
+        "fifa_code": "MEX"
+      },
+      "result": {
+        "home_goals": 0,
         "away_goals": 3
       },
       "date": null
     },
     {
-      "id": "G-5",
-      "group": "G",
+      "id": "A-6",
+      "group": "A",
       "home_team": {
-        "name": "Egypt",
-        "fifa_code": "EGY"
+        "name": "South Africa",
+        "fifa_code": "RSA"
       },
       "away_team": {
-        "name": "Iran",
-        "fifa_code": "IRN"
+        "name": "South Korea",
+        "fifa_code": "KOR"
       },
-      "result": null,
+      "result": {
+        "home_goals": 1,
+        "away_goals": 0
+      },
+      "date": null
+    }
+  ],
+  "B": [
+    {
+      "id": "B-1",
+      "group": "B",
+      "home_team": {
+        "name": "Canada",
+        "fifa_code": "CAN"
+      },
+      "away_team": {
+        "name": "Bosnia & Herzegovina",
+        "fifa_code": "BIH"
+      },
+      "result": {
+        "home_goals": 1,
+        "away_goals": 1
+      },
       "date": null
     },
     {
-      "id": "G-6",
-      "group": "G",
+      "id": "B-2",
+      "group": "B",
       "home_team": {
-        "name": "New Zealand",
-        "fifa_code": "NZL"
+        "name": "Qatar",
+        "fifa_code": "QAT"
       },
       "away_team": {
-        "name": "Belgium",
-        "fifa_code": "BEL"
+        "name": "Switzerland",
+        "fifa_code": "SWI"
       },
-      "result": null,
+      "result": {
+        "home_goals": 1,
+        "away_goals": 1
+      },
+      "date": null
+    },
+    {
+      "id": "B-3",
+      "group": "B",
+      "home_team": {
+        "name": "Switzerland",
+        "fifa_code": "SWI"
+      },
+      "away_team": {
+        "name": "Bosnia & Herzegovina",
+        "fifa_code": "BIH"
+      },
+      "result": {
+        "home_goals": 4,
+        "away_goals": 1
+      },
+      "date": null
+    },
+    {
+      "id": "B-4",
+      "group": "B",
+      "home_team": {
+        "name": "Canada",
+        "fifa_code": "CAN"
+      },
+      "away_team": {
+        "name": "Qatar",
+        "fifa_code": "QAT"
+      },
+      "result": {
+        "home_goals": 6,
+        "away_goals": 0
+      },
+      "date": null
+    },
+    {
+      "id": "B-5",
+      "group": "B",
+      "home_team": {
+        "name": "Switzerland",
+        "fifa_code": "SWI"
+      },
+      "away_team": {
+        "name": "Canada",
+        "fifa_code": "CAN"
+      },
+      "result": {
+        "home_goals": 2,
+        "away_goals": 1
+      },
+      "date": null
+    },
+    {
+      "id": "B-6",
+      "group": "B",
+      "home_team": {
+        "name": "Bosnia & Herzegovina",
+        "fifa_code": "BIH"
+      },
+      "away_team": {
+        "name": "Qatar",
+        "fifa_code": "QAT"
+      },
+      "result": {
+        "home_goals": 3,
+        "away_goals": 1
+      },
       "date": null
     }
   ],
@@ -299,17 +311,34 @@
       "date": null
     }
   ],
-  "A": [
+  "D": [
     {
-      "id": "A-1",
-      "group": "A",
+      "id": "D-1",
+      "group": "D",
       "home_team": {
-        "name": "Mexico",
-        "fifa_code": "MEX"
+        "name": "USA",
+        "fifa_code": "USA"
       },
       "away_team": {
-        "name": "South Africa",
-        "fifa_code": "RSA"
+        "name": "Paraguay",
+        "fifa_code": "PAR"
+      },
+      "result": {
+        "home_goals": 4,
+        "away_goals": 1
+      },
+      "date": null
+    },
+    {
+      "id": "D-2",
+      "group": "D",
+      "home_team": {
+        "name": "Australia",
+        "fifa_code": "AUS"
+      },
+      "away_team": {
+        "name": "Turkey",
+        "fifa_code": "TUR"
       },
       "result": {
         "home_goals": 2,
@@ -318,87 +347,174 @@
       "date": null
     },
     {
-      "id": "A-2",
-      "group": "A",
+      "id": "D-3",
+      "group": "D",
       "home_team": {
-        "name": "South Korea",
-        "fifa_code": "KOR"
+        "name": "USA",
+        "fifa_code": "USA"
       },
       "away_team": {
-        "name": "Czech Republic",
-        "fifa_code": "CZE"
+        "name": "Australia",
+        "fifa_code": "AUS"
       },
       "result": {
         "home_goals": 2,
-        "away_goals": 1
-      },
-      "date": null
-    },
-    {
-      "id": "A-3",
-      "group": "A",
-      "home_team": {
-        "name": "Czech Republic",
-        "fifa_code": "CZE"
-      },
-      "away_team": {
-        "name": "South Africa",
-        "fifa_code": "RSA"
-      },
-      "result": {
-        "home_goals": 1,
-        "away_goals": 1
-      },
-      "date": null
-    },
-    {
-      "id": "A-4",
-      "group": "A",
-      "home_team": {
-        "name": "Mexico",
-        "fifa_code": "MEX"
-      },
-      "away_team": {
-        "name": "South Korea",
-        "fifa_code": "KOR"
-      },
-      "result": {
-        "home_goals": 1,
         "away_goals": 0
       },
       "date": null
     },
     {
-      "id": "A-5",
-      "group": "A",
+      "id": "D-4",
+      "group": "D",
       "home_team": {
-        "name": "Czech Republic",
-        "fifa_code": "CZE"
+        "name": "Turkey",
+        "fifa_code": "TUR"
       },
       "away_team": {
-        "name": "Mexico",
-        "fifa_code": "MEX"
+        "name": "Paraguay",
+        "fifa_code": "PAR"
       },
       "result": {
         "home_goals": 0,
-        "away_goals": 3
+        "away_goals": 1
       },
       "date": null
     },
     {
-      "id": "A-6",
-      "group": "A",
+      "id": "D-5",
+      "group": "D",
       "home_team": {
-        "name": "South Africa",
-        "fifa_code": "RSA"
+        "name": "Turkey",
+        "fifa_code": "TUR"
       },
       "away_team": {
-        "name": "South Korea",
-        "fifa_code": "KOR"
+        "name": "USA",
+        "fifa_code": "USA"
+      },
+      "result": {
+        "home_goals": 3,
+        "away_goals": 2
+      },
+      "date": null
+    },
+    {
+      "id": "D-6",
+      "group": "D",
+      "home_team": {
+        "name": "Paraguay",
+        "fifa_code": "PAR"
+      },
+      "away_team": {
+        "name": "Australia",
+        "fifa_code": "AUS"
+      },
+      "result": {
+        "home_goals": 0,
+        "away_goals": 0
+      },
+      "date": null
+    }
+  ],
+  "E": [
+    {
+      "id": "E-1",
+      "group": "E",
+      "home_team": {
+        "name": "Germany",
+        "fifa_code": "GER"
+      },
+      "away_team": {
+        "name": "Curaçao",
+        "fifa_code": "CUR"
+      },
+      "result": {
+        "home_goals": 7,
+        "away_goals": 1
+      },
+      "date": null
+    },
+    {
+      "id": "E-2",
+      "group": "E",
+      "home_team": {
+        "name": "Ivory Coast",
+        "fifa_code": "CIV"
+      },
+      "away_team": {
+        "name": "Ecuador",
+        "fifa_code": "ECU"
       },
       "result": {
         "home_goals": 1,
         "away_goals": 0
+      },
+      "date": null
+    },
+    {
+      "id": "E-3",
+      "group": "E",
+      "home_team": {
+        "name": "Germany",
+        "fifa_code": "GER"
+      },
+      "away_team": {
+        "name": "Ivory Coast",
+        "fifa_code": "CIV"
+      },
+      "result": {
+        "home_goals": 2,
+        "away_goals": 1
+      },
+      "date": null
+    },
+    {
+      "id": "E-4",
+      "group": "E",
+      "home_team": {
+        "name": "Ecuador",
+        "fifa_code": "ECU"
+      },
+      "away_team": {
+        "name": "Curaçao",
+        "fifa_code": "CUR"
+      },
+      "result": {
+        "home_goals": 0,
+        "away_goals": 0
+      },
+      "date": null
+    },
+    {
+      "id": "E-5",
+      "group": "E",
+      "home_team": {
+        "name": "Curaçao",
+        "fifa_code": "CUR"
+      },
+      "away_team": {
+        "name": "Ivory Coast",
+        "fifa_code": "CIV"
+      },
+      "result": {
+        "home_goals": 0,
+        "away_goals": 2
+      },
+      "date": null
+    },
+    {
+      "id": "E-6",
+      "group": "E",
+      "home_team": {
+        "name": "Ecuador",
+        "fifa_code": "ECU"
+      },
+      "away_team": {
+        "name": "Germany",
+        "fifa_code": "GER"
+      },
+      "result": {
+        "home_goals": 2,
+        "away_goals": 1
       },
       "date": null
     }
@@ -507,107 +623,199 @@
       "date": null
     }
   ],
-  "E": [
+  "G": [
     {
-      "id": "E-1",
-      "group": "E",
+      "id": "G-1",
+      "group": "G",
       "home_team": {
-        "name": "Germany",
-        "fifa_code": "GER"
+        "name": "Belgium",
+        "fifa_code": "BEL"
       },
       "away_team": {
-        "name": "Curaçao",
-        "fifa_code": "CUR"
-      },
-      "result": {
-        "home_goals": 7,
-        "away_goals": 1
-      },
-      "date": null
-    },
-    {
-      "id": "E-2",
-      "group": "E",
-      "home_team": {
-        "name": "Ivory Coast",
-        "fifa_code": "CIV"
-      },
-      "away_team": {
-        "name": "Ecuador",
-        "fifa_code": "ECU"
+        "name": "Egypt",
+        "fifa_code": "EGY"
       },
       "result": {
         "home_goals": 1,
-        "away_goals": 0
-      },
-      "date": null
-    },
-    {
-      "id": "E-3",
-      "group": "E",
-      "home_team": {
-        "name": "Germany",
-        "fifa_code": "GER"
-      },
-      "away_team": {
-        "name": "Ivory Coast",
-        "fifa_code": "CIV"
-      },
-      "result": {
-        "home_goals": 2,
         "away_goals": 1
       },
       "date": null
     },
     {
-      "id": "E-4",
-      "group": "E",
+      "id": "G-2",
+      "group": "G",
       "home_team": {
-        "name": "Ecuador",
-        "fifa_code": "ECU"
+        "name": "Iran",
+        "fifa_code": "IRN"
       },
       "away_team": {
-        "name": "Curaçao",
-        "fifa_code": "CUR"
+        "name": "New Zealand",
+        "fifa_code": "NZL"
       },
       "result": {
-        "home_goals": 0,
-        "away_goals": 0
-      },
-      "date": null
-    },
-    {
-      "id": "E-5",
-      "group": "E",
-      "home_team": {
-        "name": "Curaçao",
-        "fifa_code": "CUR"
-      },
-      "away_team": {
-        "name": "Ivory Coast",
-        "fifa_code": "CIV"
-      },
-      "result": {
-        "home_goals": 0,
+        "home_goals": 2,
         "away_goals": 2
       },
       "date": null
     },
     {
-      "id": "E-6",
-      "group": "E",
+      "id": "G-3",
+      "group": "G",
       "home_team": {
-        "name": "Ecuador",
-        "fifa_code": "ECU"
+        "name": "Belgium",
+        "fifa_code": "BEL"
       },
       "away_team": {
-        "name": "Germany",
-        "fifa_code": "GER"
+        "name": "Iran",
+        "fifa_code": "IRN"
+      },
+      "result": {
+        "home_goals": 0,
+        "away_goals": 0
+      },
+      "date": null
+    },
+    {
+      "id": "G-4",
+      "group": "G",
+      "home_team": {
+        "name": "New Zealand",
+        "fifa_code": "NZL"
+      },
+      "away_team": {
+        "name": "Egypt",
+        "fifa_code": "EGY"
+      },
+      "result": {
+        "home_goals": 1,
+        "away_goals": 3
+      },
+      "date": null
+    },
+    {
+      "id": "G-5",
+      "group": "G",
+      "home_team": {
+        "name": "Egypt",
+        "fifa_code": "EGY"
+      },
+      "away_team": {
+        "name": "Iran",
+        "fifa_code": "IRN"
+      },
+      "result": null,
+      "date": null
+    },
+    {
+      "id": "G-6",
+      "group": "G",
+      "home_team": {
+        "name": "New Zealand",
+        "fifa_code": "NZL"
+      },
+      "away_team": {
+        "name": "Belgium",
+        "fifa_code": "BEL"
+      },
+      "result": null,
+      "date": null
+    }
+  ],
+  "H": [
+    {
+      "id": "H-1",
+      "group": "H",
+      "home_team": {
+        "name": "Spain",
+        "fifa_code": "SPA"
+      },
+      "away_team": {
+        "name": "Cape Verde",
+        "fifa_code": "CPV"
+      },
+      "result": {
+        "home_goals": 0,
+        "away_goals": 0
+      },
+      "date": null
+    },
+    {
+      "id": "H-2",
+      "group": "H",
+      "home_team": {
+        "name": "Saudi Arabia",
+        "fifa_code": "KSA"
+      },
+      "away_team": {
+        "name": "Uruguay",
+        "fifa_code": "URU"
+      },
+      "result": {
+        "home_goals": 1,
+        "away_goals": 1
+      },
+      "date": null
+    },
+    {
+      "id": "H-3",
+      "group": "H",
+      "home_team": {
+        "name": "Spain",
+        "fifa_code": "SPA"
+      },
+      "away_team": {
+        "name": "Saudi Arabia",
+        "fifa_code": "KSA"
+      },
+      "result": {
+        "home_goals": 4,
+        "away_goals": 0
+      },
+      "date": null
+    },
+    {
+      "id": "H-4",
+      "group": "H",
+      "home_team": {
+        "name": "Uruguay",
+        "fifa_code": "URU"
+      },
+      "away_team": {
+        "name": "Cape Verde",
+        "fifa_code": "CPV"
       },
       "result": {
         "home_goals": 2,
-        "away_goals": 1
+        "away_goals": 2
       },
+      "date": null
+    },
+    {
+      "id": "H-5",
+      "group": "H",
+      "home_team": {
+        "name": "Cape Verde",
+        "fifa_code": "CPV"
+      },
+      "away_team": {
+        "name": "Saudi Arabia",
+        "fifa_code": "KSA"
+      },
+      "result": null,
+      "date": null
+    },
+    {
+      "id": "H-6",
+      "group": "H",
+      "home_team": {
+        "name": "Uruguay",
+        "fifa_code": "URU"
+      },
+      "away_team": {
+        "name": "Spain",
+        "fifa_code": "SPA"
+      },
+      "result": null,
       "date": null
     }
   ],
@@ -807,312 +1015,6 @@
       "date": null
     }
   ],
-  "D": [
-    {
-      "id": "D-1",
-      "group": "D",
-      "home_team": {
-        "name": "USA",
-        "fifa_code": "USA"
-      },
-      "away_team": {
-        "name": "Paraguay",
-        "fifa_code": "PAR"
-      },
-      "result": {
-        "home_goals": 4,
-        "away_goals": 1
-      },
-      "date": null
-    },
-    {
-      "id": "D-2",
-      "group": "D",
-      "home_team": {
-        "name": "Australia",
-        "fifa_code": "AUS"
-      },
-      "away_team": {
-        "name": "Turkey",
-        "fifa_code": "TUR"
-      },
-      "result": {
-        "home_goals": 2,
-        "away_goals": 0
-      },
-      "date": null
-    },
-    {
-      "id": "D-3",
-      "group": "D",
-      "home_team": {
-        "name": "USA",
-        "fifa_code": "USA"
-      },
-      "away_team": {
-        "name": "Australia",
-        "fifa_code": "AUS"
-      },
-      "result": {
-        "home_goals": 2,
-        "away_goals": 0
-      },
-      "date": null
-    },
-    {
-      "id": "D-4",
-      "group": "D",
-      "home_team": {
-        "name": "Turkey",
-        "fifa_code": "TUR"
-      },
-      "away_team": {
-        "name": "Paraguay",
-        "fifa_code": "PAR"
-      },
-      "result": {
-        "home_goals": 0,
-        "away_goals": 1
-      },
-      "date": null
-    },
-    {
-      "id": "D-5",
-      "group": "D",
-      "home_team": {
-        "name": "Turkey",
-        "fifa_code": "TUR"
-      },
-      "away_team": {
-        "name": "USA",
-        "fifa_code": "USA"
-      },
-      "result": {
-        "home_goals": 3,
-        "away_goals": 2
-      },
-      "date": null
-    },
-    {
-      "id": "D-6",
-      "group": "D",
-      "home_team": {
-        "name": "Paraguay",
-        "fifa_code": "PAR"
-      },
-      "away_team": {
-        "name": "Australia",
-        "fifa_code": "AUS"
-      },
-      "result": {
-        "home_goals": 0,
-        "away_goals": 0
-      },
-      "date": null
-    }
-  ],
-  "H": [
-    {
-      "id": "H-1",
-      "group": "H",
-      "home_team": {
-        "name": "Spain",
-        "fifa_code": "SPA"
-      },
-      "away_team": {
-        "name": "Cape Verde",
-        "fifa_code": "CPV"
-      },
-      "result": {
-        "home_goals": 0,
-        "away_goals": 0
-      },
-      "date": null
-    },
-    {
-      "id": "H-2",
-      "group": "H",
-      "home_team": {
-        "name": "Saudi Arabia",
-        "fifa_code": "KSA"
-      },
-      "away_team": {
-        "name": "Uruguay",
-        "fifa_code": "URU"
-      },
-      "result": {
-        "home_goals": 1,
-        "away_goals": 1
-      },
-      "date": null
-    },
-    {
-      "id": "H-3",
-      "group": "H",
-      "home_team": {
-        "name": "Spain",
-        "fifa_code": "SPA"
-      },
-      "away_team": {
-        "name": "Saudi Arabia",
-        "fifa_code": "KSA"
-      },
-      "result": {
-        "home_goals": 4,
-        "away_goals": 0
-      },
-      "date": null
-    },
-    {
-      "id": "H-4",
-      "group": "H",
-      "home_team": {
-        "name": "Uruguay",
-        "fifa_code": "URU"
-      },
-      "away_team": {
-        "name": "Cape Verde",
-        "fifa_code": "CPV"
-      },
-      "result": {
-        "home_goals": 2,
-        "away_goals": 2
-      },
-      "date": null
-    },
-    {
-      "id": "H-5",
-      "group": "H",
-      "home_team": {
-        "name": "Cape Verde",
-        "fifa_code": "CPV"
-      },
-      "away_team": {
-        "name": "Saudi Arabia",
-        "fifa_code": "KSA"
-      },
-      "result": null,
-      "date": null
-    },
-    {
-      "id": "H-6",
-      "group": "H",
-      "home_team": {
-        "name": "Uruguay",
-        "fifa_code": "URU"
-      },
-      "away_team": {
-        "name": "Spain",
-        "fifa_code": "SPA"
-      },
-      "result": null,
-      "date": null
-    }
-  ],
-  "B": [
-    {
-      "id": "B-1",
-      "group": "B",
-      "home_team": {
-        "name": "Canada",
-        "fifa_code": "CAN"
-      },
-      "away_team": {
-        "name": "Bosnia & Herzegovina",
-        "fifa_code": "BIH"
-      },
-      "result": {
-        "home_goals": 1,
-        "away_goals": 1
-      },
-      "date": null
-    },
-    {
-      "id": "B-2",
-      "group": "B",
-      "home_team": {
-        "name": "Qatar",
-        "fifa_code": "QAT"
-      },
-      "away_team": {
-        "name": "Switzerland",
-        "fifa_code": "SWI"
-      },
-      "result": {
-        "home_goals": 1,
-        "away_goals": 1
-      },
-      "date": null
-    },
-    {
-      "id": "B-3",
-      "group": "B",
-      "home_team": {
-        "name": "Switzerland",
-        "fifa_code": "SWI"
-      },
-      "away_team": {
-        "name": "Bosnia & Herzegovina",
-        "fifa_code": "BIH"
-      },
-      "result": {
-        "home_goals": 4,
-        "away_goals": 1
-      },
-      "date": null
-    },
-    {
-      "id": "B-4",
-      "group": "B",
-      "home_team": {
-        "name": "Canada",
-        "fifa_code": "CAN"
-      },
-      "away_team": {
-        "name": "Qatar",
-        "fifa_code": "QAT"
-      },
-      "result": {
-        "home_goals": 6,
-        "away_goals": 0
-      },
-      "date": null
-    },
-    {
-      "id": "B-5",
-      "group": "B",
-      "home_team": {
-        "name": "Switzerland",
-        "fifa_code": "SWI"
-      },
-      "away_team": {
-        "name": "Canada",
-        "fifa_code": "CAN"
-      },
-      "result": {
-        "home_goals": 2,
-        "away_goals": 1
-      },
-      "date": null
-    },
-    {
-      "id": "B-6",
-      "group": "B",
-      "home_team": {
-        "name": "Bosnia & Herzegovina",
-        "fifa_code": "BIH"
-      },
-      "away_team": {
-        "name": "Qatar",
-        "fifa_code": "QAT"
-      },
-      "result": {
-        "home_goals": 3,
-        "away_goals": 1
-      },
-      "date": null
-    }
-  ],
   "K": [
     {
       "id": "K-1",
@@ -1206,6 +1108,104 @@
       "away_team": {
         "name": "Uzbekistan",
         "fifa_code": "UZB"
+      },
+      "result": null,
+      "date": null
+    }
+  ],
+  "L": [
+    {
+      "id": "L-1",
+      "group": "L",
+      "home_team": {
+        "name": "England",
+        "fifa_code": "ENG"
+      },
+      "away_team": {
+        "name": "Croatia",
+        "fifa_code": "CRO"
+      },
+      "result": {
+        "home_goals": 4,
+        "away_goals": 2
+      },
+      "date": null
+    },
+    {
+      "id": "L-2",
+      "group": "L",
+      "home_team": {
+        "name": "Ghana",
+        "fifa_code": "GHA"
+      },
+      "away_team": {
+        "name": "Panama",
+        "fifa_code": "PAN"
+      },
+      "result": {
+        "home_goals": 1,
+        "away_goals": 0
+      },
+      "date": null
+    },
+    {
+      "id": "L-3",
+      "group": "L",
+      "home_team": {
+        "name": "England",
+        "fifa_code": "ENG"
+      },
+      "away_team": {
+        "name": "Ghana",
+        "fifa_code": "GHA"
+      },
+      "result": {
+        "home_goals": 0,
+        "away_goals": 0
+      },
+      "date": null
+    },
+    {
+      "id": "L-4",
+      "group": "L",
+      "home_team": {
+        "name": "Panama",
+        "fifa_code": "PAN"
+      },
+      "away_team": {
+        "name": "Croatia",
+        "fifa_code": "CRO"
+      },
+      "result": {
+        "home_goals": 0,
+        "away_goals": 1
+      },
+      "date": null
+    },
+    {
+      "id": "L-5",
+      "group": "L",
+      "home_team": {
+        "name": "Panama",
+        "fifa_code": "PAN"
+      },
+      "away_team": {
+        "name": "England",
+        "fifa_code": "ENG"
+      },
+      "result": null,
+      "date": null
+    },
+    {
+      "id": "L-6",
+      "group": "L",
+      "home_team": {
+        "name": "Croatia",
+        "fifa_code": "CRO"
+      },
+      "away_team": {
+        "name": "Ghana",
+        "fifa_code": "GHA"
       },
       "result": null,
       "date": null

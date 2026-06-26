@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 pub mod models;
 pub mod standings;
@@ -10,7 +10,7 @@ pub use standings::*;
 pub use bracket::*;
 pub use simulation::*;
 
-pub type WorldCupData = HashMap<String, Vec<Match>>;
+pub type WorldCupData = BTreeMap<String, Vec<Match>>;
 
 pub fn load_data(path: &str) -> Result<WorldCupData, String> {
     let content = std::fs::read_to_string(path).map_err(|e| format!("Failed to read {}: {}", path, e))?;

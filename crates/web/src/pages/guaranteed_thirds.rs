@@ -1,7 +1,7 @@
 use copa2026_core::*;
 use gloo_net::http::Request;
 use leptos::prelude::*;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 async fn load_simulation() -> Result<ThirdPlaceSimulation, String> {
     let raw = Request::get("/data.json")
@@ -9,7 +9,7 @@ async fn load_simulation() -> Result<ThirdPlaceSimulation, String> {
         .await
         .map_err(|e| format!("fetch: {e}"))?;
 
-    let data: HashMap<String, Vec<Match>> = raw
+    let data: BTreeMap<String, Vec<Match>> = raw
         .json()
         .await
         .map_err(|e| format!("json: {e}"))?;

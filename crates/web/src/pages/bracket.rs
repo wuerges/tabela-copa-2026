@@ -2,7 +2,7 @@ use copa2026_core::*;
 use gloo_net::http::Request;
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 #[derive(Clone, Serialize, Deserialize)]
 struct PageData {
@@ -14,7 +14,7 @@ async fn load_page_data() -> Result<PageData, String> {
         .send()
         .await
         .map_err(|e| format!("fetch: {e}"))?;
-    let data: HashMap<String, Vec<Match>> = raw
+    let data: BTreeMap<String, Vec<Match>> = raw
         .json()
         .await
         .map_err(|e| format!("json: {e}"))?;

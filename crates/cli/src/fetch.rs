@@ -1,9 +1,9 @@
 use copa2026_core::*;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 const URL: &str = "https://raw.githubusercontent.com/openfootball/worldcup/refs/heads/master/2026--usa/cup.txt";
 
-pub async fn fetch_data() -> Result<HashMap<String, Vec<Match>>, String> {
+pub async fn fetch_data() -> Result<BTreeMap<String, Vec<Match>>, String> {
     let client = reqwest::Client::new();
     let resp = client
         .get(URL)
@@ -23,10 +23,10 @@ pub async fn fetch_data() -> Result<HashMap<String, Vec<Match>>, String> {
     parse_football_txt(&body)
 }
 
-fn parse_football_txt(content: &str) -> Result<HashMap<String, Vec<Match>>, String> {
-    let mut data: HashMap<String, Vec<Match>> = HashMap::new();
+fn parse_football_txt(content: &str) -> Result<BTreeMap<String, Vec<Match>>, String> {
+    let mut data: BTreeMap<String, Vec<Match>> = BTreeMap::new();
     let mut current_group: Option<String> = None;
-    let mut match_idx: HashMap<String, usize> = HashMap::new();
+    let mut match_idx: BTreeMap<String, usize> = BTreeMap::new();
 
     for line in content.lines() {
         let trimmed = line.trim();
