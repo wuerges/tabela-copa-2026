@@ -129,6 +129,10 @@ fn make_code(name: &str) -> String {
         .chars()
         .filter(|c| c.is_ascii_alphabetic())
         .collect();
+    if cleaned.is_empty() {
+        let fallback: String = name.chars().take(3).collect();
+        return fallback.to_uppercase();
+    }
     if cleaned.len() <= 3 {
         cleaned.to_uppercase()
     } else {

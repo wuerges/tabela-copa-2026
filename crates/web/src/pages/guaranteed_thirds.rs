@@ -41,9 +41,9 @@ pub fn GuaranteedThirdsPage() -> impl IntoView {
                             </thead>
                             <tbody>
                                 {sim.teams.iter().map(|tc| {
-                                    let class = if tc.total_qualification_pct == 100.0 {
+                                    let class = if tc.total_qualification_pct > 99.999 {
                                         "guaranteed"
-                                    } else if tc.total_qualification_pct == 0.0 {
+                                    } else if tc.total_qualification_pct < 0.001 {
                                         "eliminated"
                                     } else {
                                         ""
@@ -64,8 +64,8 @@ pub fn GuaranteedThirdsPage() -> impl IntoView {
                             </tbody>
                         </table>
                         <p class="summary">{
-                            let guaranteed = sim.teams.iter().filter(|t| t.total_qualification_pct == 100.0).count();
-                            let eliminated = sim.teams.iter().filter(|t| t.total_qualification_pct == 0.0).count();
+                            let guaranteed = sim.teams.iter().filter(|t| t.total_qualification_pct > 99.999).count();
+                            let eliminated = sim.teams.iter().filter(|t| t.total_qualification_pct < 0.001).count();
                             let uncertain = sim.teams.len() - guaranteed - eliminated;
                             view! {
                                 <span class="badge guaranteed-badge">{"Garantidos: "}{guaranteed}</span>

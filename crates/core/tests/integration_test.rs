@@ -172,8 +172,8 @@ fn test_bracket_generation() {
     assert_eq!(bracket.rounds[1].len(), 8, "Round of 16 should have 8 matches");
     assert_eq!(bracket.rounds[2].len(), 4, "QF should have 4 matches");
     assert_eq!(bracket.rounds[3].len(), 2, "SF should have 2 matches");
-    assert_eq!(bracket.rounds[4].len(), 1, "Third place match");
-    assert_eq!(bracket.rounds[5].len(), 1, "Final");
+    assert_eq!(bracket.rounds[4].len(), 1, "Final");
+    assert_eq!(bracket.rounds[5].len(), 1, "Third Place");
 }
 
 #[test]
@@ -402,4 +402,131 @@ fn test_knockout_full_bracket_to_final() {
     let champ_name = champion.home_team.as_ref().unwrap().name.clone();
     let sb1_name = bracket_all.rounds[3][0].home_team.as_ref().unwrap().name.clone();
     assert_eq!(champ_name, sb1_name);
+}
+
+#[test]
+fn test_same_team_fifa_code_does_not_panic() {
+    let team = make_team("Clone", "CLO");
+    let matches = vec![
+        make_match("m1", "A", team.clone(), make_team("Opp", "OPP"), Some(make_match_result(1, 0))),
+        make_match("m2", "A", team.clone(), team.clone(), Some(make_match_result(1, 0))),
+    ];
+    let standings = calculate_standings(&matches);
+    assert!(!standings.is_empty());
+}
+
+#[test]
+fn test_empty_data_no_panic() {
+    assert!(calculate_standings(&[]).is_empty());
+    let gs = group_standings(&[]);
+    assert_eq!(gs.len(), 12);
+    assert!(gs.iter().all(|(_, s)| s.is_empty()));
+    let thirds = rank_third_places(&[]);
+    assert!(thirds.is_empty());
+    let sim = simulate_guaranteed_thirds(&[]);
+    assert!(sim.teams.is_empty());
+    let bracket = generate_bracket(&[]);
+    assert_eq!(bracket.rounds.len(), 6);
+}
+
+#[test]
+fn test_exhaustive_vs_monte_carlo_consistency() {
+    let t1 = make_team("Alpha", "ALP");
+    let t2 = make_team("Beta", "BET");
+    let t3 = make_team("Gamma", "GAM");
+    let t4 = make_team("Delta", "DEL");
+
+    let matches = vec![
+        make_match("1", "A", t1.clone(), t2.clone(), Some(make_match_result(1, 0))),
+        make_match("2", "A", t3.clone(), t4.clone(), Some(make_match_result(1, 0))),
+        make_match("3", "A", t1.clone(), t3.clone(), None),
+        make_match("4", "A", t2.clone(), t4.clone(), None),
+        make_match("5", "A", t4.clone(), t1.clone(), None),
+        make_match("6", "A", t2.clone(), t3.clone(), None),
+    ];
+
+    let sim = simulate_guaranteed_thirds(&matches);
+    assert_eq!(sim.unplayed_matches, 4);
+    assert!(sim.total_scenarios > 0);
+    for tc in &sim.teams {
+        assert!(tc.total_qualification_pct >= 0.0 && tc.total_qualification_pct <= 100.0);
+    }
+}
+
+#[test]
+fn test_guaranteed_team_has_full_percentage() {
+    let t1 = make_team("Alpha", "ALP");
+    let t2 = make_team("Beta", "BET");
+    let t3 = make_team("Gamma", "GAM");
+    let t4 = make_team("Delta", "DEL");
+
+    let matches = vec![
+        make_match("1", "A", t1.clone(), t2.clone(), Some(make_match_result(5, 0))),
+        make_match("2", "A", t3.clone(), t4.clone(), Some(make_match_result(1, 0))),
+        make_match("3", "A", t1.clone(), t3.clone(), Some(make_match_result(3, 0))),
+        make_match("4", "A", t2.clone(), t4.clone(), Some(make_match_result(1, 0))),
+        make_match("5", "A", t4.clone(), t1.clone(), Some(make_match_result(0, 2))),
+        make_match("6", "A", t2.clone(), t3.clone(), Some(make_match_result(1, 3))),
+    ];
+
+    let sim = simulate_guaranteed_thirds(&matches);
+    let t1_result = sim.teams.iter().find(|t| t.team.fifa_code == "ALP").unwrap();
+    assert!(t1_result.total_qualification_pct > 99.999, "Should be 100%, got {}", t1_result.total_qualification_pct);
+
+    for tc in &sim.teams {
+        if tc.total_qualification_pct > 99.999 {
+            assert!(tc.first_pct > 99.999 || tc.second_pct > 99.999 || tc.third_qualified_pct > 99.999,
+                "Guaranteed team {} should have at least one path at 100%", tc.team.name);
+        }
+    }
+}
+
+#[test]
+fn test_resolve_slot_invalid_labels() {
+    let gs = basic_standings_12();
+    let bracket = generate_bracket(&gs);
+    for round in &bracket.rounds {
+        for slot in round {
+            assert!(!slot.home_label.is_empty());
+            assert!(!slot.away_label.is_empty());
+        }
+    }
+}
+
+#[test]
+fn test_apply_knockout_results_empty_map() {
+    let gs = basic_standings_12();
+    let bracket = generate_bracket(&gs);
+    let empty: std::collections::HashMap<String, KnockoutResult> = std::collections::HashMap::new();
+    let result = apply_knockout_results(&bracket, &empty);
+    assert_eq!(result.rounds.len(), bracket.rounds.len());
+    for (r1, r2) in bracket.rounds.iter().zip(result.rounds.iter()) {
+        assert_eq!(r1.len(), r2.len());
+    }
+}
+
+#[test]
+fn test_knockout_mixed_winners_propagate() {
+    let gs = basic_standings_12();
+    let bracket = generate_bracket(&gs);
+    let mut results: std::collections::HashMap<String, KnockoutResult> = std::collections::HashMap::new();
+
+    for (i, slot) in bracket.rounds[0].iter().enumerate() {
+        let key = format!("{}-{}", slot.round, slot.match_number);
+        results.insert(key, KnockoutResult {
+            round: slot.round.clone(),
+            match_number: slot.match_number,
+            winner_is_home: i % 2 == 0,
+        });
+    }
+
+    let updated = apply_knockout_results(&bracket, &results);
+    for slot in &updated.rounds[0] {
+        assert!(slot.home_result.is_some());
+        assert!(slot.away_result.is_some());
+    }
+    for slot in &updated.rounds[1] {
+        assert!(slot.home_team.is_some(), "R16 home not filled");
+        assert!(slot.away_team.is_some(), "R16 away not filled");
+    }
 }

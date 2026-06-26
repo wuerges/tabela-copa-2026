@@ -28,14 +28,14 @@ pub fn calculate_standings(matches: &[Match]) -> Vec<Standing> {
             let away_goals = result.away_goals;
             let outcome = result.outcome();
 
-            let (h, a) = if h_idx < a_idx {
+            let (h, a) = if h_idx == a_idx {
+                continue;
+            } else if h_idx < a_idx {
                 let (left, right) = team_data.split_at_mut(a_idx);
                 (&mut left[h_idx], &mut right[0])
-            } else if a_idx < h_idx {
+            } else {
                 let (left, right) = team_data.split_at_mut(h_idx);
                 (&mut right[0], &mut left[a_idx])
-            } else {
-                unreachable!()
             };
 
             h.played += 1;

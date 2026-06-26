@@ -31,8 +31,19 @@ enum Commands {
     Stats,
 }
 
+fn load(path: &std::path::Path) -> Vec<Match> {
+    match load_data(&path.to_string_lossy()) {
+        Ok(d) => d.into_values().flatten().collect(),
+        Err(e) => {
+            eprintln!("Error loading {}: {}", path.display(), e);
+            Vec::new()
+        }
+    }
+}
+
 fn main() {
     let cli = Cli::parse();
+    let path = &cli.data_file;
 
     match cli.command {
         Commands::Fetch => {
@@ -40,24 +51,31 @@ fn main() {
             runtime.block_on(async {
                 match fetch::fetch_data().await {
                     Ok(data) => {
-                        save_data(&data, cli.data_file.to_str().unwrap()).unwrap();
-                        let total: usize = data.values().map(|v| v.len()).sum();
-                        println!("Fetched {} matches across {} groups.", total, data.len());
+                        if let Err(e) = save_data(&data, &path.to_string_lossy()) {
+                            eprintln!("Error saving: {}", e);
+                        } else {
+                            let total: usize = data.values().map(|v| v.len()).sum();
+                            println!("Fetched {total} matches across {} groups.", data.len());
+                        }
                     }
-                    Err(e) => eprintln!("Error: {}", e),
+                    Err(e) => eprintln!("Error: {e}"),
                 }
             });
         }
 
         Commands::Standings { group } => {
-            let data = load_data(cli.data_file.to_str().unwrap()).unwrap_or_default();
-            let all_matches: Vec<Match> = data.into_values().flatten().collect();
+            let all_matches = load(path);
+            if all_matches.is_empty() { return; }
 
             if let Some(g) = group {
                 let group_matches: Vec<Match> = all_matches
                     .into_iter()
                     .filter(|m| m.group.0 == g.to_uppercase())
                     .collect();
+                if group_matches.is_empty() {
+                    eprintln!("Group '{g}' not found.");
+                    return;
+                }
                 let standings = calculate_standings(&group_matches);
                 display::print_group_table(&GroupCode(g.to_uppercase()), &standings);
             } else {
@@ -71,30 +89,30 @@ fn main() {
         }
 
         Commands::BestThirds => {
-            let data = load_data(cli.data_file.to_str().unwrap()).unwrap_or_default();
-            let all_matches: Vec<Match> = data.into_values().flatten().collect();
+            let all_matches = load(path);
+            if all_matches.is_empty() { return; }
             let gs = group_standings(&all_matches);
             display::print_third_place_ranking(&gs);
         }
 
         Commands::Bracket => {
-            let data = load_data(cli.data_file.to_str().unwrap()).unwrap_or_default();
-            let all_matches: Vec<Match> = data.into_values().flatten().collect();
+            let all_matches = load(path);
+            if all_matches.is_empty() { return; }
             let gs = group_standings(&all_matches);
             let bracket = generate_bracket(&gs);
             display::print_bracket(&bracket);
         }
 
         Commands::GuaranteedThirds => {
-            let data = load_data(cli.data_file.to_str().unwrap()).unwrap_or_default();
-            let all_matches: Vec<Match> = data.into_values().flatten().collect();
+            let all_matches = load(path);
+            if all_matches.is_empty() { return; }
             let sim = simulate_guaranteed_thirds(&all_matches);
             display::print_simulation(&sim);
         }
 
         Commands::Stats => {
-            let data = load_data(cli.data_file.to_str().unwrap()).unwrap_or_default();
-            let all_matches: Vec<Match> = data.into_values().flatten().collect();
+            let all_matches = load(path);
+            if all_matches.is_empty() { return; }
             display::print_stats(&all_matches);
         }
     }

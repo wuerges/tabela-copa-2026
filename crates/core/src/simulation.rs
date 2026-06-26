@@ -154,17 +154,21 @@ fn simulate_exhaustive(
         let gs = group_standings(current);
         for (_, standings) in &gs {
             if let Some(s) = standings.first() {
-                *first_place_counts.get_mut(&s.team.fifa_code).unwrap() += 1;
+                if let Some(count) = first_place_counts.get_mut(&s.team.fifa_code) {
+                    *count += 1;
+                }
             }
             if let Some(s) = standings.get(1) {
-                *second_place_counts.get_mut(&s.team.fifa_code).unwrap() += 1;
+                if let Some(count) = second_place_counts.get_mut(&s.team.fifa_code) {
+                    *count += 1;
+                }
             }
         }
         let third_places = rank_third_places(&gs);
         for (_, standing) in third_places.iter().take(TOP_THIRDS) {
-            *third_qualified_counts
-                .get_mut(&standing.team.fifa_code)
-                .unwrap() += 1;
+            if let Some(count) = third_qualified_counts.get_mut(&standing.team.fifa_code) {
+                *count += 1;
+            }
         }
         return;
     }

@@ -31,10 +31,11 @@ fn resolve_slot(label: &str, team_map: &HashMap<String, Team>, thirds: &[(GroupC
         return None;
     }
 
-    if label.starts_with('3') && label.len() > 1 {
-        let group_code = &label[1..];
-        if let Some((_, standing)) = thirds.iter().find(|(gc, _)| gc.0 == group_code) {
-            return Some(standing.team.clone());
+    if label.starts_with('3') && label.len() == 2 {
+        let rank_char = label.chars().nth(1).unwrap_or('A');
+        let rank = (rank_char as u32).saturating_sub('A' as u32) as usize;
+        if rank < thirds.len() {
+            return Some(thirds[rank].1.team.clone());
         }
         return None;
     }

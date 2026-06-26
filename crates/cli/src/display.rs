@@ -129,9 +129,9 @@ pub fn print_simulation(sim: &ThirdPlaceSimulation) {
     for tc in &sim.teams {
         let mut row = Row::new();
 
-        let style = if tc.total_qualification_pct == 100.0 {
+        let style = if tc.total_qualification_pct > 99.999 {
             Color::Green
-        } else if tc.total_qualification_pct == 0.0 {
+        } else if tc.total_qualification_pct < 0.001 {
             Color::Red
         } else {
             Color::Reset
@@ -151,8 +151,8 @@ pub fn print_simulation(sim: &ThirdPlaceSimulation) {
 
     println!("{table}");
 
-    let guaranteed = sim.teams.iter().filter(|t| t.total_qualification_pct == 100.0).count();
-    let eliminated = sim.teams.iter().filter(|t| t.total_qualification_pct == 0.0).count();
+    let guaranteed = sim.teams.iter().filter(|t| t.total_qualification_pct > 99.999).count();
+    let eliminated = sim.teams.iter().filter(|t| t.total_qualification_pct < 0.001).count();
     let uncertain = sim.teams.len() - guaranteed - eliminated;
     println!("  Garantidos: {guaranteed} | Incertos: {uncertain} | Desqualificados: {eliminated}");
 }
