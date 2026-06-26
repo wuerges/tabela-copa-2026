@@ -4,7 +4,7 @@
 **classificados-copa-3o-lugar** — Classificados da Copa do Mundo 2026
 
 ## Descrição
-Ferramenta CLI + Web App em Rust para acompanhar a Copa do Mundo FIFA 2026. Baixa resultados do dataset openfootball (formato Football.TXT), armazena localmente em JSON, exibe classificações, a chave do mata-mata, e simula cenários para determinar a probabilidade de classificação de cada seleção. A interface web (Leptos CSR / WebAssembly) permite editar placares da fase de grupos e preencher a chave completa do mata-mata até a final.
+Ferramenta CLI + Web App em Rust para acompanhar a Copa do Mundo FIFA 2026. Baixa resultados do dataset openfootball (formato Football.TXT), armazena em JSON canônico (`BTreeMap`, determinístico), exibe classificações, a chave do mata-mata, e simula cenários para determinar a probabilidade de classificação de cada seleção. A interface web (Leptos CSR / WebAssembly) permite editar placares da fase de grupos e preencher a chave completa do mata-mata até a final. 17 testes de integração cobrem casos de borda (dados vazios, times contra si mesmos, consistência exaustivo vs Monte Carlo, epsilon em 100%/0%).
 
 ## Arquitetura
 - **CLI** (`copa2026`): comandos de busca, exibição de tabelas, chave do mata-mata e simulação
@@ -16,8 +16,9 @@ Ferramenta CLI + Web App em Rust para acompanhar a Copa do Mundo FIFA 2026. Baix
 ### 1. Buscar e armazenar (`fetch`)
 - Baixa o arquivo `cup.txt` do repositório [openfootball/worldcup](https://github.com/openfootball/worldcup) (formato Football.TXT)
 - Faz parse dos grupos, times e resultados (placar no formato `X-Y (A-B)`)
-- Mapeia nomes de times para códigos FIFA de 3 letras (com fallback para prefixos e mapeamento manual para casos ambíguos como Austria/Australia)
-- Armazena os dados localmente em `data.json`
+- Mapeia nomes de times para códigos FIFA de 3 letras (com fallback para prefixos e mapeamento manual para casos ambíguos como Austria/Australia; nomes sem ASCII alfabético usam fallback para os 3 primeiros chars)
+- Armazena em `data.json` com **ordem canônica** (`BTreeMap` — grupos A–L, matches numerados 1–6 por grupo)
+- `data.json` é determinístico: mesmo input sempre produz arquivo idêntico (verificável com `diff`)
 
 ### 2. Exibir classificações (`standings` / Web)
 - Tabela de cada grupo: posição, time, P, J, V, E, D, GP, GC, SG
@@ -25,8 +26,9 @@ Ferramenta CLI + Web App em Rust para acompanhar a Copa do Mundo FIFA 2026. Baix
 - Ranking separado dos **8 melhores 3º lugares**
 
 ### 3. Chave do mata-mata (`bracket` / Web)
-- Árvore completa (R32 → R16 → QF → SF → Final → 3º Lugar) com layout CSS Grid de 6 colunas equidistantes
+- Árvore completa (R32 → R16 → QF → SF → Final → 3º Lugar) com layout CSS Grid de 6 colunas equidistantes (`repeat(6, 1fr)`)
 - Preenchimento automático dos confrontos com base nos resultados da fase de grupos
+- R32 match 16 usa as **8 melhores seleções 3º colocadas** (rankeadas), não grupos fixos G/H
 - **Propagação round-by-round**: selecionar vencedores em qualquer fase propaga o time para todas as fases seguintes (inclusive Final e 3º Lugar simultaneamente)
 - **Distinção visual** no R32: times com posição garantida (verde) vs. incertos que podem mudar (amarelo itálico), via `clinched_positions()`
 - **Três estados por nó**: finished (placar definido, borda verde), determined (times definidos sem placar, borda azul), pending (slot vazio, opaco)
@@ -42,8 +44,9 @@ Ferramenta CLI + Web App em Rust para acompanhar a Copa do Mundo FIFA 2026. Baix
   - **2o%** — chance de terminar em 2º no grupo
   - **3o%** — chance de terminar em 3º E ficar entre os 8 melhores
   - **Total%** — probabilidade total de avançar ao mata-mata
-- Tabela ordenada por Total% decrescente com distinção visual: garantidos (linha verde), incertos, desqualificados (linha opaca riscada em vermelho)
+- Tabela ordenada por Total% decrescente com distinção visual: garantidos (linha verde, `> 99.999%`), incertos, desqualificados (linha opaca riscada em vermelho, `< 0.001%`)
 - Badges coloridos no rodapé: verde (garantidos), azul (incertos), vermelho (desqualificados)
+- Comparações de 100% e 0% usam epsilon (`> 99.999` / `< 0.001`) para evitar erros de ponto flutuante
 
 ### 5. Posições garantidas (`clinched_positions`)
 - Para cada grupo, enumera exaustivamente todas as permutações dos jogos pendentes (3^n, max 729 por grupo)
@@ -71,6 +74,7 @@ Ferramenta CLI + Web App em Rust para acompanhar a Copa do Mundo FIFA 2026. Baix
 - **HTTP client:** `reqwest` + `tokio`
 - **Parsing:** `regex-lite` para identificar placares no formato Football.TXT
 - **Tabelas:** `comfy-table`
+- **Tratamento de erros:** paths não-UTF-8 usam `to_string_lossy()`, `load_data` reporta falhas em vez de silenciosamente retornar vazio
 
 ### Core (crate compartilhado)
 - **Modelos:** `Team`, `GroupCode`, `Match`, `MatchResult`, `Standing`, `Bracket`, `BracketSlot`, `KnockoutResult`, `TeamQualificationChance`, `ThirdPlaceSimulation`
@@ -148,5 +152,5 @@ just web-serve              # servir build local (http://localhost:8080)
 
 ### Testes
 ```bash
-just test                   # roda os 10 testes do core
+just test                   # roda os 17 testes do core
 ```
