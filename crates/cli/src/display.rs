@@ -119,26 +119,47 @@ pub fn print_simulation(sim: &ThirdPlaceSimulation) {
     );
     println!();
 
-    if sim.guaranteed.is_empty() {
-        println!("No third-placed teams are mathematically guaranteed yet.");
-    } else {
-        println!("Guaranteed (qualified in 100% of scenarios):");
+    if !sim.direct_qualified.is_empty() {
+        println!("Classificados diretos (1o/2o lugar garantido):");
+        for team in &sim.direct_qualified {
+            println!("  {} ", team);
+        }
+        println!();
+    }
+
+    if !sim.guaranteed.is_empty() {
+        println!("3o lugar garantido (100%):");
         for team in &sim.guaranteed {
             println!("  {} ", team);
         }
+        println!();
     }
 
-    println!();
-    println!("Uncertain:");
-    for uc in &sim.uncertain {
-        println!(
-            "  {} (Group {}) - {:.1}% - {} pts, GD {:+}",
-            uc.team.name,
-            uc.group.0,
-            uc.percentage,
-            uc.points,
-            uc.goal_diff
-        );
+    if sim.guaranteed.is_empty() && sim.direct_qualified.is_empty() {
+        println!("Nenhum time matematicamente garantido ainda.");
+        println!();
+    }
+
+    if !sim.uncertain.is_empty() {
+        println!("Incerto:");
+        for uc in &sim.uncertain {
+            println!(
+                "  {} (Group {}) - {:.1}% - {} pts, GD {:+}",
+                uc.team.name,
+                uc.group.0,
+                uc.percentage,
+                uc.points,
+                uc.goal_diff
+            );
+        }
+        println!();
+    }
+
+    if !sim.eliminated.is_empty() {
+        println!("Desqualificados (0%):");
+        for team in &sim.eliminated {
+            println!("  {} ", team);
+        }
     }
 }
 
