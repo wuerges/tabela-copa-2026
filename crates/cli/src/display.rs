@@ -119,48 +119,42 @@ pub fn print_simulation(sim: &ThirdPlaceSimulation) {
     );
     println!();
 
-    if !sim.direct_qualified.is_empty() {
-        println!("Classificados diretos (1o/2o lugar garantido):");
-        for team in &sim.direct_qualified {
-            println!("  {} ", team);
-        }
-        println!();
+    let mut table = Table::new();
+    table
+        .set_header(vec![
+            "Time", "Gr", "1o%", "2o%", "3o%", "Total%", "Pts", "GD",
+        ])
+        .set_content_arrangement(ContentArrangement::Dynamic);
+
+    for tc in &sim.teams {
+        let mut row = Row::new();
+
+        let style = if tc.total_qualification_pct == 100.0 {
+            Color::Green
+        } else if tc.total_qualification_pct == 0.0 {
+            Color::Red
+        } else {
+            Color::Reset
+        };
+
+        row.add_cell(Cell::new(&tc.team.name).fg(style));
+        row.add_cell(Cell::new(&tc.group.0));
+        row.add_cell(Cell::new(format!("{:.1}", tc.first_pct)));
+        row.add_cell(Cell::new(format!("{:.1}", tc.second_pct)));
+        row.add_cell(Cell::new(format!("{:.1}", tc.third_qualified_pct)));
+        row.add_cell(Cell::new(format!("{:.1}", tc.total_qualification_pct)).fg(style));
+        row.add_cell(Cell::new(tc.points.to_string()));
+        row.add_cell(Cell::new(format!("{:+}", tc.goal_diff)));
+
+        table.add_row(row);
     }
 
-    if !sim.guaranteed.is_empty() {
-        println!("3o lugar garantido (100%):");
-        for team in &sim.guaranteed {
-            println!("  {} ", team);
-        }
-        println!();
-    }
+    println!("{table}");
 
-    if sim.guaranteed.is_empty() && sim.direct_qualified.is_empty() {
-        println!("Nenhum time matematicamente garantido ainda.");
-        println!();
-    }
-
-    if !sim.uncertain.is_empty() {
-        println!("Incerto:");
-        for uc in &sim.uncertain {
-            println!(
-                "  {} (Group {}) - {:.1}% - {} pts, GD {:+}",
-                uc.team.name,
-                uc.group.0,
-                uc.percentage,
-                uc.points,
-                uc.goal_diff
-            );
-        }
-        println!();
-    }
-
-    if !sim.eliminated.is_empty() {
-        println!("Desqualificados (0%):");
-        for team in &sim.eliminated {
-            println!("  {} ", team);
-        }
-    }
+    let guaranteed = sim.teams.iter().filter(|t| t.total_qualification_pct == 100.0).count();
+    let eliminated = sim.teams.iter().filter(|t| t.total_qualification_pct == 0.0).count();
+    let uncertain = sim.teams.len() - guaranteed - eliminated;
+    println!("  Garantidos: {guaranteed} | Incertos: {uncertain} | Desqualificados: {eliminated}");
 }
 
 pub fn print_stats(matches: &[Match]) {

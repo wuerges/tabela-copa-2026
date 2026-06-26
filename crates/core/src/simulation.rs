@@ -8,21 +8,20 @@ const MONTE_CARLO_SAMPLES: u64 = 50_000;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ThirdPlaceSimulation {
-    pub direct_qualified: Vec<String>,
-    pub guaranteed: Vec<String>,
-    pub eliminated: Vec<String>,
-    pub uncertain: Vec<ThirdPlaceChance>,
+    pub teams: Vec<TeamQualificationChance>,
     pub total_scenarios: u64,
     pub unplayed_matches: usize,
     pub method: String,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct ThirdPlaceChance {
+pub struct TeamQualificationChance {
     pub team: Team,
     pub group: GroupCode,
-    pub scenarios_qualified: u64,
-    pub percentage: f64,
+    pub first_pct: f64,
+    pub second_pct: f64,
+    pub third_qualified_pct: f64,
+    pub total_qualification_pct: f64,
     pub points: u32,
     pub goal_diff: i32,
 }
@@ -38,7 +37,8 @@ pub fn simulate_guaranteed_thirds(matches: &[Match]) -> ThirdPlaceSimulation {
     let total_exhaustive = 3u64.saturating_pow(n as u32);
 
     let mut third_qualified_counts: HashMap<String, u64> = HashMap::new();
-    let mut top_two_counts: HashMap<String, u64> = HashMap::new();
+    let mut first_place_counts: HashMap<String, u64> = HashMap::new();
+    let mut second_place_counts: HashMap<String, u64> = HashMap::new();
     let mut all_teams: HashSet<String> = HashSet::new();
 
     for group_code in GROUP_CODES {
@@ -50,7 +50,8 @@ pub fn simulate_guaranteed_thirds(matches: &[Match]) -> ThirdPlaceSimulation {
         for t in teams {
             all_teams.insert(t.clone());
             third_qualified_counts.entry(t.clone()).or_insert(0);
-            top_two_counts.entry(t).or_insert(0);
+            first_place_counts.entry(t.clone()).or_insert(0);
+            second_place_counts.entry(t).or_insert(0);
         }
     }
 
@@ -67,7 +68,8 @@ pub fn simulate_guaranteed_thirds(matches: &[Match]) -> ThirdPlaceSimulation {
             &unplayed,
             0,
             &mut third_qualified_counts,
-            &mut top_two_counts,
+            &mut first_place_counts,
+            &mut second_place_counts,
         );
     } else {
         method = format!("monte-carlo ({MONTE_CARLO_SAMPLES} samples)");
@@ -77,9 +79,12 @@ pub fn simulate_guaranteed_thirds(matches: &[Match]) -> ThirdPlaceSimulation {
             &unplayed,
             MONTE_CARLO_SAMPLES,
             &mut third_qualified_counts,
-            &mut top_two_counts,
+            &mut first_place_counts,
+            &mut second_place_counts,
         );
     }
+
+    let ts = total_scenarios as f64;
 
     let mut team_info: HashMap<String, (Team, GroupCode)> = HashMap::new();
     for m in matches {
@@ -90,14 +95,14 @@ pub fn simulate_guaranteed_thirds(matches: &[Match]) -> ThirdPlaceSimulation {
         }
     }
 
-    let mut direct_qualified: Vec<String> = Vec::new();
-    let mut guaranteed: Vec<String> = Vec::new();
-    let mut eliminated: Vec<String> = Vec::new();
-    let mut uncertain: Vec<ThirdPlaceChance> = Vec::new();
+    let mut teams: Vec<TeamQualificationChance> = Vec::new();
 
     for fifa_code in &all_teams {
         let third_count = third_qualified_counts.get(fifa_code).copied().unwrap_or(0);
-        let top2_count = top_two_counts.get(fifa_code).copied().unwrap_or(0);
+        let first_count = first_place_counts.get(fifa_code).copied().unwrap_or(0);
+        let second_count = second_place_counts.get(fifa_code).copied().unwrap_or(0);
+        let total_qual = first_count + second_count + third_count;
+
         let (team, group) = team_info[fifa_code].clone();
 
         let group_matches: Vec<&Match> = matches.iter().filter(|m| m.group.0 == group.0).collect();
@@ -109,38 +114,27 @@ pub fn simulate_guaranteed_thirds(matches: &[Match]) -> ThirdPlaceSimulation {
             .map(|s| (s.points, s.goal_diff))
             .unwrap_or((0, 0));
 
-        if top2_count == total_scenarios {
-            direct_qualified.push(team.name.clone());
-        } else if third_count == total_scenarios {
-            guaranteed.push(team.name.clone());
-        } else if third_count > 0 {
-            uncertain.push(ThirdPlaceChance {
-                team,
-                group,
-                scenarios_qualified: third_count,
-                percentage: if total_scenarios > 0 {
-                    (third_count as f64 / total_scenarios as f64) * 100.0
-                } else {
-                    0.0
-                },
-                points,
-                goal_diff,
-            });
-        } else {
-            eliminated.push(team.name.clone());
-        }
+        teams.push(TeamQualificationChance {
+            team,
+            group,
+            first_pct: (first_count as f64 / ts) * 100.0,
+            second_pct: (second_count as f64 / ts) * 100.0,
+            third_qualified_pct: (third_count as f64 / ts) * 100.0,
+            total_qualification_pct: (total_qual as f64 / ts) * 100.0,
+            points,
+            goal_diff,
+        });
     }
 
-    direct_qualified.sort();
-    guaranteed.sort();
-    eliminated.sort();
-    uncertain.sort_by(|a, b| b.scenarios_qualified.cmp(&a.scenarios_qualified));
+    teams.sort_by(|a, b| {
+        b.total_qualification_pct
+            .partial_cmp(&a.total_qualification_pct)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| b.first_pct.partial_cmp(&a.first_pct).unwrap_or(std::cmp::Ordering::Equal))
+    });
 
     ThirdPlaceSimulation {
-        direct_qualified,
-        guaranteed,
-        eliminated,
-        uncertain,
+        teams,
         total_scenarios,
         unplayed_matches: n,
         method,
@@ -153,13 +147,17 @@ fn simulate_exhaustive(
     unplayed: &[usize],
     idx: usize,
     third_qualified_counts: &mut HashMap<String, u64>,
-    top_two_counts: &mut HashMap<String, u64>,
+    first_place_counts: &mut HashMap<String, u64>,
+    second_place_counts: &mut HashMap<String, u64>,
 ) {
     if idx == unplayed.len() {
         let gs = group_standings(current);
         for (_, standings) in &gs {
-            for s in standings.iter().take(2) {
-                *top_two_counts.get_mut(&s.team.fifa_code).unwrap() += 1;
+            if let Some(s) = standings.first() {
+                *first_place_counts.get_mut(&s.team.fifa_code).unwrap() += 1;
+            }
+            if let Some(s) = standings.get(1) {
+                *second_place_counts.get_mut(&s.team.fifa_code).unwrap() += 1;
             }
         }
         let third_places = rank_third_places(&gs);
@@ -187,7 +185,8 @@ fn simulate_exhaustive(
             unplayed,
             idx + 1,
             third_qualified_counts,
-            top_two_counts,
+            first_place_counts,
+            second_place_counts,
         );
     }
 
@@ -199,7 +198,8 @@ fn simulate_monte_carlo(
     unplayed: &[usize],
     samples: u64,
     third_qualified_counts: &mut HashMap<String, u64>,
-    top_two_counts: &mut HashMap<String, u64>,
+    first_place_counts: &mut HashMap<String, u64>,
+    second_place_counts: &mut HashMap<String, u64>,
 ) {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
@@ -226,8 +226,13 @@ fn simulate_monte_carlo(
 
         let gs = group_standings(&current);
         for (_, standings) in &gs {
-            for s in standings.iter().take(2) {
-                if let Some(count) = top_two_counts.get_mut(&s.team.fifa_code) {
+            if let Some(s) = standings.first() {
+                if let Some(count) = first_place_counts.get_mut(&s.team.fifa_code) {
+                    *count += 1;
+                }
+            }
+            if let Some(s) = standings.get(1) {
+                if let Some(count) = second_place_counts.get_mut(&s.team.fifa_code) {
                     *count += 1;
                 }
             }
