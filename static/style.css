@@ -183,18 +183,18 @@ tr.qualified td:nth-child(2) {
 /* ── Bracket Tree ─────────────────────────── */
 
 .bracket-tree {
-    display: flex;
-    gap: 0;
-    overflow-x: auto;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    width: 100%;
     padding: 1rem 0;
-    min-width: max-content;
 }
 
 .bracket-legend {
     display: flex;
     gap: 1.5rem;
     margin-bottom: 0.5rem;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
+    color: #94a3b8;
 }
 
 .legend-item::before {
@@ -213,9 +213,10 @@ tr.qualified td:nth-child(2) {
 .bracket-round {
     display: flex;
     flex-direction: column;
-    min-width: 200px;
+    min-width: 0;
     border-right: 1px solid #1e293b;
-    padding: 0 1rem;
+    padding: 0 0.25rem;
+    overflow: hidden;
 }
 
 .bracket-round:last-child {
@@ -223,12 +224,14 @@ tr.qualified td:nth-child(2) {
 }
 
 .bracket-round h3 {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: #64748b;
     text-transform: uppercase;
     text-align: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .bracket-matches {
@@ -241,8 +244,8 @@ tr.qualified td:nth-child(2) {
 .match-node {
     background: #1e293b;
     border: 1px solid #334155;
-    border-radius: 6px;
-    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    padding: 0.2rem 0.35rem;
     position: relative;
 }
 
@@ -255,8 +258,8 @@ tr.qualified td:nth-child(2) {
     content: '';
     position: absolute;
     top: 50%;
-    right: -0.5rem;
-    width: 0.5rem;
+    right: -0.4rem;
+    width: 0.4rem;
     height: 1px;
     background: #4ade80;
 }
@@ -275,12 +278,15 @@ tr.qualified td:nth-child(2) {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.82rem;
+    gap: 0.2rem;
+    font-size: 0.7rem;
 }
 
 .team {
     flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .home-team {
@@ -296,10 +302,11 @@ tr.qualified td:nth-child(2) {
 .team-score {
     font-weight: 700;
     color: #fbbf24;
-    min-width: 3rem;
+    min-width: 2rem;
     text-align: center;
     white-space: nowrap;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
+    flex-shrink: 0;
 }
 
 .match-node.finished .team-score {
@@ -330,7 +337,6 @@ tr.qualified td:nth-child(2) {
 }
 
 .winner {
-    font-weight: 700;
     color: #4ade80 !important;
 }
 
@@ -341,7 +347,6 @@ tr.qualified td:nth-child(2) {
 
 .clinched {
     color: #4ade80 !important;
-    font-weight: 600;
 }
 
 .uncertain {

@@ -316,7 +316,7 @@ fn BracketTree(
                             let prev_count = b.rounds[ri - 1].len();
                             let cells_per_slot = prev_count / match_count;
                             if cells_per_slot >= 2 {
-                                cells_per_slot / 2 * 3 - 1
+                                cells_per_slot / 2 * 2
                             } else {
                                 0
                             }
@@ -347,7 +347,7 @@ fn BracketTree(
                         let clickable_class = " clickable";
 
                         round_slots.push(view! {
-                            <div class=extra_class style=format!("margin-top: {}rem; margin-bottom: {}rem", top_gap, top_gap)>
+                            <div class=extra_class style=format!("margin-top: {}rem", top_gap)>
                                 <div class="match-teams">
                                     {if home_clickable {
                                         let cb = on_select.clone();
