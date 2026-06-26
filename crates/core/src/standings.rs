@@ -139,6 +139,77 @@ pub fn rank_third_places(group_standings: &[(GroupCode, Vec<Standing>)]) -> Vec<
     thirds
 }
 
+pub fn clinched_positions(all_matches: &[Match]) -> HashMap<String, Vec<u32>> {
+    let mut result = HashMap::new();
+
+    for group_code in GROUP_CODES {
+        let group_matches: Vec<&Match> = all_matches
+            .iter()
+            .filter(|m| m.group.0 == *group_code)
+            .collect();
+
+        let unplayed: Vec<usize> = group_matches
+            .iter()
+            .enumerate()
+            .filter(|(_, m)| m.result.is_none())
+            .map(|(i, _)| i)
+            .collect();
+
+        let mut position_sets: HashMap<String, (u32, u32)> = HashMap::new();
+
+        let mut current: Vec<Match> = group_matches.iter().map(|&m| m.clone()).collect();
+        for_each_permutation(&mut current, &unplayed, 0, &mut |matches| {
+            let standings = calculate_standings(matches);
+            for s in &standings {
+                let entry = position_sets
+                    .entry(s.team.fifa_code.clone())
+                    .or_insert((u32::MAX, 0));
+                entry.0 = entry.0.min(s.position);
+                entry.1 = entry.1.max(s.position);
+            }
+        });
+
+        for (code, (min_pos, max_pos)) in position_sets {
+            if min_pos == max_pos {
+                result
+                    .entry(code)
+                    .or_insert_with(Vec::new)
+                    .push(min_pos);
+            }
+        }
+    }
+
+    result
+}
+
+fn for_each_permutation(
+    current: &mut [Match],
+    unplayed: &[usize],
+    idx: usize,
+    callback: &mut dyn FnMut(&[Match]),
+) {
+    if idx == unplayed.len() {
+        callback(current);
+        return;
+    }
+
+    let match_idx = unplayed[idx];
+    let results = [
+        MatchResult { home_goals: 1, away_goals: 0 },
+        MatchResult { home_goals: 0, away_goals: 0 },
+        MatchResult { home_goals: 0, away_goals: 1 },
+    ];
+
+    let original = current[match_idx].result;
+
+    for result in &results {
+        current[match_idx].result = Some(*result);
+        for_each_permutation(current, unplayed, idx + 1, callback);
+    }
+
+    current[match_idx].result = original;
+}
+
 #[derive(Default)]
 struct TeamStats {
     team: Team,

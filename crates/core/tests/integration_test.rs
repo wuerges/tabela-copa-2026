@@ -256,3 +256,150 @@ fn basic_standings_12() -> Vec<(GroupCode, Vec<Standing>)> {
         })
         .collect()
 }
+
+#[test]
+fn test_knockout_full_bracket_to_final() {
+    let gs = basic_standings_12();
+    let base_bracket = generate_bracket(&gs);
+
+    let rounds = &base_bracket.rounds;
+    assert_eq!(rounds.len(), 6, "R32, R16, QF, SF, 3rd, Final");
+    assert_eq!(rounds[0].len(), 16);
+    assert_eq!(rounds[1].len(), 8);
+    assert_eq!(rounds[2].len(), 4);
+    assert_eq!(rounds[3].len(), 2);
+    assert_eq!(rounds[4].len(), 1);
+    assert_eq!(rounds[5].len(), 1);
+
+    assert!(rounds[0].iter().all(|s| s.home_team.is_some() && s.away_team.is_some()),
+        "All R32 slots should have teams from group standings");
+    assert!(rounds[1].iter().all(|s| s.home_team.is_none() && s.away_team.is_none()),
+        "R16 should be empty before any results");
+
+    let mut results: std::collections::HashMap<String, KnockoutResult> = std::collections::HashMap::new();
+
+    for slot in &rounds[0] {
+        let key = format!("{}-{}", slot.round, slot.match_number);
+        results.insert(key, KnockoutResult {
+            round: slot.round.clone(),
+            match_number: slot.match_number,
+            winner_is_home: true,
+        });
+    }
+
+    let bracket_r32 = apply_knockout_results(&base_bracket, &results);
+
+    let r32_slots = &bracket_r32.rounds[0];
+    for slot in r32_slots {
+        assert_eq!(slot.home_result, Some(1));
+        assert_eq!(slot.away_result, Some(0));
+    }
+
+    let r16_slots = &bracket_r32.rounds[1];
+    for slot in r16_slots {
+        assert!(slot.home_team.is_some(), "R16 home team should be filled after R32 results");
+        assert!(slot.away_team.is_some(), "R16 away team should be filled after R32 results");
+    }
+
+    for slot in &bracket_r32.rounds[1] {
+        let key = format!("{}-{}", slot.round, slot.match_number);
+        results.insert(key, KnockoutResult {
+            round: slot.round.clone(),
+            match_number: slot.match_number,
+            winner_is_home: true,
+        });
+    }
+
+    let bracket_r16 = apply_knockout_results(&base_bracket, &results);
+    let r16 = &bracket_r16.rounds[1];
+    for slot in r16 {
+        assert_eq!(slot.home_result, Some(1));
+        assert_eq!(slot.away_result, Some(0));
+    }
+
+    let qf_slots = &bracket_r16.rounds[2];
+    for slot in qf_slots {
+        assert!(slot.home_team.is_some(), "QF home team should be filled after R16");
+        assert!(slot.away_team.is_some(), "QF away team should be filled after R16");
+    }
+
+    for slot in &bracket_r16.rounds[2] {
+        let key = format!("{}-{}", slot.round, slot.match_number);
+        results.insert(key, KnockoutResult {
+            round: slot.round.clone(),
+            match_number: slot.match_number,
+            winner_is_home: true,
+        });
+    }
+
+    let bracket_qf = apply_knockout_results(&base_bracket, &results);
+    let qf = &bracket_qf.rounds[2];
+    for slot in qf {
+        assert_eq!(slot.home_result, Some(1));
+        assert_eq!(slot.away_result, Some(0));
+    }
+
+    let sf_slots = &bracket_qf.rounds[3];
+    for slot in sf_slots {
+        assert!(slot.home_team.is_some(), "SF home team should be filled after QF");
+        assert!(slot.away_team.is_some(), "SF away team should be filled after QF");
+    }
+
+    for slot in &bracket_qf.rounds[3] {
+        let key = format!("{}-{}", slot.round, slot.match_number);
+        results.insert(key, KnockoutResult {
+            round: slot.round.clone(),
+            match_number: slot.match_number,
+            winner_is_home: true,
+        });
+    }
+
+    let bracket_sf = apply_knockout_results(&base_bracket, &results);
+    let sf = &bracket_sf.rounds[3];
+    for slot in sf {
+        assert_eq!(slot.home_result, Some(1));
+        assert_eq!(slot.away_result, Some(0));
+    }
+
+    let third_place_slot = &bracket_sf.rounds[5][0];
+    assert!(third_place_slot.home_team.is_some(), "3rd place home should be filled");
+    assert!(third_place_slot.away_team.is_some(), "3rd place away should be filled");
+
+    let final_slot = &bracket_sf.rounds[4][0];
+    assert!(final_slot.home_team.is_some(), "Final home team should be filled after SF");
+    assert!(final_slot.away_team.is_some(), "Final away team should be filled after SF");
+
+    let final_key = format!("{}-{}", final_slot.round, final_slot.match_number);
+    results.insert(final_key, KnockoutResult {
+        round: final_slot.round.clone(),
+        match_number: final_slot.match_number,
+        winner_is_home: true,
+    });
+
+    let bracket_final = apply_knockout_results(&base_bracket, &results);
+    let f = &bracket_final.rounds[4][0];
+    assert_eq!(f.home_result, Some(1));
+    assert_eq!(f.away_result, Some(0));
+
+    let third_key = format!("{}-{}", third_place_slot.round, third_place_slot.match_number);
+    results.insert(third_key, KnockoutResult {
+        round: third_place_slot.round.clone(),
+        match_number: third_place_slot.match_number,
+        winner_is_home: false,
+    });
+
+    let bracket_all = apply_knockout_results(&base_bracket, &results);
+
+    for round in &bracket_all.rounds {
+        for slot in round {
+            assert!(slot.home_result.is_some(), "Every match should have a result");
+            assert!(slot.away_result.is_some(), "Every match should have a result");
+        }
+    }
+
+    let champion = &bracket_all.rounds[4][0];
+    assert!(champion.home_result.unwrap() > champion.away_result.unwrap() || champion.away_result.unwrap() > champion.home_result.unwrap());
+    let champ_name = champion.home_team.as_ref().unwrap().name.clone();
+    let sb1_name = bracket_all.rounds[3][0].home_team.as_ref().unwrap().name.clone();
+    assert_eq!(champ_name, sb1_name);
+}
