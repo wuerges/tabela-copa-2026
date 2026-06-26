@@ -91,7 +91,7 @@ fn GroupCard(
 
     view! {
         <div class="group-card">
-            <h3>Grupo {group.0.clone()}</h3>
+            <h3>{"Grupo "} {group.0.clone()}</h3>
             <table class="standings-table">
                 <thead>
                     <tr>
