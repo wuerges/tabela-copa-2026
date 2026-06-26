@@ -4,9 +4,15 @@ edition.workspace = true
 version.workspace = true
 license.workspace = true
 
-# TODO: Implement Leptos web app
-# Dependencies will include:
-# leptos, leptos_axum, leptos_router, axum, tower-http
-
 [dependencies]
 copa2026-core = { path = "../core" }
+leptos = { version = "0.8", features = ["csr"] }
+leptos_router = "0.8"
+serde.workspace = true
+serde_json.workspace = true
+gloo-net = { version = "0.6", features = ["json"] }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+console_error_panic_hook = "0.1"
+console_log = "1"
+log = "0.4"

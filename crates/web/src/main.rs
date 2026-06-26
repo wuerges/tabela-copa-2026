@@ -1,4 +1,12 @@
+use leptos::prelude::*;
+
+mod app;
+mod pages;
+
+use app::App;
+
 fn main() {
-    eprintln!("Web app not implemented yet. Use 'copa2026' CLI instead.");
-    std::process::exit(1);
+    console_error_panic_hook::set_once();
+    console_log::init_with_level(log::Level::Debug).ok();
+    mount_to_body(App);
 }
