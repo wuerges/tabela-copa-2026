@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd crates/web && trunk build --release && cp ../../data.json dist/ && cp ../../static/style.css dist/",
+  "buildCommand": "cd crates/web && trunk build --release",
   "outputDirectory": "crates/web/dist",
   "installCommand": "rustup target add wasm32-unknown-unknown && cargo install trunk",
   "rewrites": [

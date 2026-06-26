@@ -1,0 +1,4 @@
+[[hooks]]
+stage = "pre_build"
+command = "sh"
+command_arguments = ["-c", "cp -u ../../data.json . 2>/dev/null; cp -u ../../static/style.css . 2>/dev/null; true"]

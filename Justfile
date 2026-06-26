@@ -41,6 +41,10 @@ build-all: build web-build
 check:
     cargo check --workspace
 
+# Run all tests
+test:
+    cargo test -p copa2026-core
+
 # Clean build artifacts
 clean:
     cargo clean
@@ -54,8 +58,6 @@ web-dev:
 # Build web app for production/Vercel
 web-build:
     cd crates/web && trunk build --release
-    cp data.json crates/web/dist/
-    cp static/style.css crates/web/dist/
 
 # Serve built web app locally (run web-build first)
 web-serve:

@@ -1,2 +1,4 @@
 /target
 /crates/web/dist
+/crates/web/data.json
+/crates/web/style.css
