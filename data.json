@@ -1211,7 +1211,10 @@
         "name": "England",
         "fifa_code": "ENG"
       },
-      "result": null,
+      "result": {
+        "home_goals": 0,
+        "away_goals": 2
+      },
       "date": null
     },
     {
@@ -1225,7 +1228,10 @@
         "name": "Ghana",
         "fifa_code": "GHA"
       },
-      "result": null,
+      "result": {
+        "home_goals": 2,
+        "away_goals": 1
+      },
       "date": null
     }
   ]
