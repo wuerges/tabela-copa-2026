@@ -1,4 +1,4 @@
 [[hooks]]
 stage = "pre_build"
 command = "sh"
-command_arguments = ["-c", "cp ../../data.json . 2>/dev/null; cp ../../static/style.css . 2>/dev/null; true"]
+command_arguments = ["-c", "cmp -s ../../data.json data.json 2>/dev/null || cp ../../data.json .; cmp -s ../../static/style.css style.css 2>/dev/null || cp ../../static/style.css .; true"]
