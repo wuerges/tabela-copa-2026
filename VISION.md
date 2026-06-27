@@ -154,3 +154,37 @@ just web-serve              # servir build local (http://localhost:8080)
 ```bash
 just test                   # roda os 17 testes do core
 ```
+
+## Versionamento
+
+O projeto usa **[jj](https://github.com/jj-vcs/jj)** (Jujutsu) como sistema de controle de versão, compatível com Git. O repositório remoto é um repositório Git padrão — `jj` opera localmente como cliente.
+
+### Fluxo de trabalho
+
+```bash
+jj new main                 # criar nova change a partir da main
+# ... fazer alterações ...
+jj diff                     # revisar mudanças
+jj commit -m "descrição"    # commit com descrição
+jj git push                 # enviar para o remote
+```
+
+### Comandos essenciais
+
+```bash
+jj log                      # histórico linear de changes
+jj status                   # ver arquivos modificados
+jj diff -r <change>         # diff de uma change específica
+jj describe -r <change> -m "mensagem"  # adicionar/editar descrição
+jj abandon -r <change>      # descartar uma change
+jj new -r <change>          # criar nova change a partir de outra
+jj squash -r <change>       # esmagar change no parent
+jj git push --allow-new     # push para novo branch no remote
+```
+
+### Convenções
+
+- **Um commit por issue**: cada fix ou feature vai em seu próprio commit com mensagem descritiva
+- **Prefixos de commit**: `fix:` para correções, `feat:` para features, `wip:` para trabalho em progresso (abandonado depois)
+- **Changes obsoletas**: branches de trabalho intermediário são abandonadas com `jj abandon` após o conteúdo ser incorporado na mainline
+- **Histórico limpo**: a mainline mantém apenas os commits finais; changes de exploração são descartadas
