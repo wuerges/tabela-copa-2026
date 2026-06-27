@@ -52,9 +52,6 @@ fn EditableApp(initial: PageData) -> impl IntoView {
     let knockout_results: RwSignal<HashMap<String, KnockoutResult>> =
         RwSignal::new(HashMap::new());
 
-    let ko_selected: RwSignal<std::collections::HashSet<String>> =
-        RwSignal::new(std::collections::HashSet::new());
-
     let user_edited: RwSignal<std::collections::HashSet<String>> =
         RwSignal::new(std::collections::HashSet::new());
 
@@ -127,11 +124,9 @@ fn EditableApp(initial: PageData) -> impl IntoView {
     });
 
     let select_ko_winner = Callback::new(move |(round, match_number, is_home): (String, u32, bool)| {
-        let key = format!("{round}-{match_number}");
-        ko_selected.update(|s| { s.insert(key.clone()); });
         knockout_results.update(|results| {
             results.insert(
-                key,
+                format!("{round}-{match_number}"),
                 KnockoutResult {
                     round: round.clone(),
                     match_number,
@@ -142,7 +137,7 @@ fn EditableApp(initial: PageData) -> impl IntoView {
     });
 
     view! {
-        <BracketTree bracket=Signal::derive(move || bracket.get()) clinched_labels=Signal::derive(move || clinched_labels.get()) ko_selected=ko_selected on_select=select_ko_winner/>
+        <BracketTree bracket=Signal::derive(move || bracket.get()) clinched_labels=Signal::derive(move || clinched_labels.get()) on_select=select_ko_winner/>
         <h2>Fase de Grupos</h2>
         <div class="groups-container">
             {move || matches_by_group.get().iter().map(|(code, matches)| {
@@ -259,9 +254,8 @@ fn GroupCard(
     }
 }
 
-/// Bracket tree dimensions for a 16→8→4→2→1→1 tournament
+/// Bracket tree lanes for a 16→8→4→2→1→1 tournament
 const BRACKET_LANES: usize = 16;
-const BRACKET_COLS: usize = 6;
 
 fn match_y_pct(round_idx: usize, match_i: usize) -> f64 {
     // R32=0(R1), R16=1(R2), QF=2(R4), SF=3(R8), Final=4(R16), 3rd=5(R16)
@@ -274,7 +268,6 @@ fn match_y_pct(round_idx: usize, match_i: usize) -> f64 {
 fn BracketTree(
     bracket: Signal<Bracket>,
     clinched_labels: Signal<std::collections::HashSet<String>>,
-    ko_selected: RwSignal<std::collections::HashSet<String>>,
     on_select: Callback<(String, u32, bool), ()>,
 ) -> impl IntoView {
     view! {
@@ -290,48 +283,6 @@ fn BracketTree(
             <div class="bracket-tree">
             {move || {
                 let b = bracket.get();
-
-                // Build connector SVG paths.
-                // Standard rounds: R32→R16, R16→QF, QF→SF (ri=0,1,2)
-                // SF feeds both Final (round[4]) and 3rd Place (round[5])
-                let mut connectors: Vec<String> = Vec::new();
-                let n_rounds = b.rounds.len();
-
-                // Regular progression: round ri feeds round ri+1
-                for ri in 0..n_rounds.saturating_sub(1) {
-                    let children = &b.rounds[ri + 1];
-                    if children.is_empty() { continue; }
-                    // SF (ri=3) feeds both Final (ri+1=4) AND 3rd Place (ri=5), skip the Final→3rd connector
-                    if ri == 4 { continue; }
-                    let child_col = if ri == 3 && n_rounds > 5 {
-                        // SF→Final: column 5, SF→3rd: column 6
-                        vec![(4, 0), (5, 0)]
-                    } else {
-                        (0..children.len()).map(|ci| (ri + 1, ci)).collect()
-                    };
-                    for (child_ri, ci) in &child_col {
-                        if *child_ri >= n_rounds { continue; }
-                        if *ci >= b.rounds[*child_ri].len() { continue; }
-                        let parent_a = ci * 2;
-                        let parent_b = ci * 2 + 1;
-                        if parent_b >= b.rounds[ri].len() { continue; }
-                        let x1_pct = (ri as f64 + 1.0) / (BRACKET_COLS as f64) * 100.0;
-                        let x_mid = (ri as f64 + 1.5) / (BRACKET_COLS as f64) * 100.0;
-                        let x3_pct = (*child_ri as f64 + 1.0) / (BRACKET_COLS as f64) * 100.0;
-                        let y1 = match_y_pct(ri, parent_a);
-                        let y2 = match_y_pct(ri, parent_b);
-                        let y_mid = (y1 + y2) / 2.0;
-                        let y_child = match_y_pct(*child_ri, *ci);
-                        connectors.push(format!(
-                            "M{x1_pct:.2},{y1:.2} L{x_mid:.2},{y1:.2} L{x_mid:.2},{y_mid:.2} L{x_mid:.2},{y_child:.2} L{x3_pct:.2},{y_child:.2}"
-                        ));
-                        if parent_b < b.rounds[ri].len() {
-                            connectors.push(format!(
-                                "M{x1_pct:.2},{y2:.2} L{x_mid:.2},{y2:.2}"
-                            ));
-                        }
-                    }
-                }
 
                 let mut round_views = Vec::new();
                 for (ri, round) in b.rounds.iter().enumerate() {
@@ -353,17 +304,6 @@ fn BracketTree(
                         let away_clickable = slot.away_team.is_some();
                         let home_wins = has_result && slot.home_result.unwrap() > slot.away_result.unwrap();
                         let away_wins = has_result && slot.away_result.unwrap() > slot.home_result.unwrap();
-
-                        let sel_key = format!("{}-{}", slot.round, slot.match_number);
-                        let is_ko_selected = ko_selected.get().contains(&sel_key);
-                        let score_display = if is_ko_selected {
-                            "\u{2713}".into() // checkmark
-                        } else {
-                            match (slot.home_result, slot.away_result) {
-                                (Some(h), Some(a)) => format!("{h} - {a}"),
-                                _ => "vs".into(),
-                            }
-                        };
 
                         let is_empty = slot.home_team.is_none() && slot.away_team.is_none();
                         let extra_class = if has_result {
@@ -425,7 +365,7 @@ fn BracketTree(
                                     } else {
                                         view! { <span class=home_class>{home_name}</span> }.into_any()
                                     }}
-                                    <span class=format!("team-score{}", if is_ko_selected { " selected" } else { "" }) title=if is_ko_selected { "Selecionado manualmente" } else { "" }>{score_display}</span>
+                                    <span class="team-score">vs</span>
                                     {if away_clickable {
                                         let rn = round_name_clone.clone();
                                         let os = on_select.clone();
@@ -460,15 +400,7 @@ fn BracketTree(
                     }.into_any());
                 }
 
-                view! {
-                    // SVG connector lines (behind match nodes via z-index)
-                    <svg class="bracket-connectors" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        {connectors.iter().map(|d| view! {
-                            <path d=d.clone()/>
-                        }).collect::<Vec<_>>()}
-                    </svg>
-                    {round_views}
-                }.into_any()
+                view! { {round_views} }.into_any()
             }}
         </div>
         </div>
