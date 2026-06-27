@@ -801,7 +801,10 @@
         "name": "Saudi Arabia",
         "fifa_code": "KSA"
       },
-      "result": null,
+      "result": {
+        "home_goals": 0,
+        "away_goals": 0
+      },
       "date": null
     },
     {
@@ -815,7 +818,10 @@
         "name": "Spain",
         "fifa_code": "SPA"
       },
-      "result": null,
+      "result": {
+        "home_goals": 0,
+        "away_goals": 1
+      },
       "date": null
     }
   ],
@@ -899,7 +905,10 @@
         "name": "France",
         "fifa_code": "FRA"
       },
-      "result": null,
+      "result": {
+        "home_goals": 1,
+        "away_goals": 4
+      },
       "date": null
     },
     {
@@ -913,7 +922,10 @@
         "name": "Iraq",
         "fifa_code": "IRQ"
       },
-      "result": null,
+      "result": {
+        "home_goals": 5,
+        "away_goals": 0
+      },
       "date": null
     }
   ],
