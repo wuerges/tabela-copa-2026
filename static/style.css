@@ -192,30 +192,35 @@ tr.qualified td:nth-child(2) {
     grid-template-columns: repeat(6, 1fr);
     gap: 0;
     min-width: 900px;
+    position: relative;
+    /* Height: enough for 16 R32 matches at ~2.5rem each */
+    height: 42rem;
+}
+
+/* SVG overlay for connector lines between rounds */
+.bracket-connectors {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.bracket-connectors path {
+    fill: none;
+    stroke: #334155;
+    stroke-width: 0.15;
+    vector-effect: non-scaling-stroke;
 }
 
 .bracket-round {
     display: flex;
     flex-direction: column;
-    padding: 0 6px;
     position: relative;
-}
-
-/* Vertical connector lines between rounds */
-.bracket-round:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: -1px;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: linear-gradient(
-        to bottom,
-        transparent 0%,
-        #334155 10%,
-        #334155 90%,
-        transparent 100%
-    );
+    height: 100%;
+    z-index: 1;
+    padding: 0 4px;
 }
 
 .bracket-round h3 {
@@ -224,40 +229,31 @@ tr.qualified td:nth-child(2) {
     text-transform: uppercase;
     text-align: center;
     letter-spacing: 0.05em;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.4rem;
+    margin: 0 0 0.3rem;
+    padding-bottom: 0.35rem;
     border-bottom: 1px solid #1e293b;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex-shrink: 0;
 }
 
 .bracket-matches {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
+    position: relative;
     flex: 1;
-    gap: 4px;
 }
 
 .match-node {
+    position: absolute;
+    left: 2px;
+    right: 2px;
     background: #111827;
     border: 1px solid #1e293b;
     border-radius: 6px;
     padding: 0.3rem 0.45rem;
-    position: relative;
+    transform: translateY(-50%);
     transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-}
-
-/* Horizontal connector stub from right edge */
-.match-node:not(.pending)::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: -7px;
-    width: 6px;
-    height: 1px;
-    background: #334155;
+    z-index: 2;
 }
 
 .match-node.finished {
@@ -266,18 +262,10 @@ tr.qualified td:nth-child(2) {
     box-shadow: 0 0 8px rgba(34, 197, 94, 0.08);
 }
 
-.match-node.finished::after {
-    background: #166534;
-}
-
 .match-node.determined {
     border-color: #1e40af;
     background: #0c1929;
     box-shadow: 0 0 6px rgba(56, 189, 248, 0.06);
-}
-
-.match-node.determined::after {
-    background: #1e40af;
 }
 
 .match-node.pending {
@@ -500,7 +488,7 @@ td.total {
 @media (max-width: 900px) {
     .bracket-tree {
         min-width: 750px;
-        font-size: 0.85em;
+        height: 34rem;
     }
 
     .bracket-section {
@@ -550,6 +538,7 @@ td.total {
 
     .bracket-tree {
         min-width: 650px;
+        height: 28rem;
     }
 
     .bracket-legend {
