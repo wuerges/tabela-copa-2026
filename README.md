@@ -54,4 +54,4 @@ copa2026/
 - **Chave completa** do mata-mata (Round of 32 até a Final)
 - **Simulação combinatória** dos jogos pendentes para identificar 3º lugares matematicamente garantidos
 - **Busca de dados** via API openfootball (resultados reais da Copa 2026)
-- **Web app** (Leptos) com edição interativa de resultados — _em breve_
+- **Web app** (Leptos CSR / WebAssembly) com edição interativa de placares e chave do mata-mata
