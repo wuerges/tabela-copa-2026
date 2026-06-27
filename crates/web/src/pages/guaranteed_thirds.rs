@@ -15,6 +15,12 @@ async fn load_simulation() -> Result<ThirdPlaceSimulation, String> {
         .map_err(|e| format!("json: {e}"))?;
 
     let all_matches: Vec<Match> = data.values().flatten().cloned().collect();
+
+    // Yield to the event loop so the Suspense fallback renders before
+    // the potentially-blocking simulation computation
+    wasm_bindgen_futures::JsFuture::from(js_sys::Promise::resolve(&wasm_bindgen::JsValue::undefined())).await
+        .map_err(|e| format!("yield: {e:?}"))?;
+
     Ok(simulate_guaranteed_thirds(&all_matches))
 }
 
@@ -57,7 +63,7 @@ pub fn GuaranteedThirdsPage() -> impl IntoView {
                                             <td>{format!("{:.1}", tc.third_qualified_pct)}</td>
                                             <td class="total">{format!("{:.1}", tc.total_qualification_pct)}</td>
                                             <td>{tc.points}</td>
-                                            <td>{format!("{:+}", tc.goal_diff)}</td>
+                                            <td>{if tc.goal_diff == 0 { "0".to_string() } else { format!("{:+}", tc.goal_diff) }}</td>
                                         </tr>
                                     }
                                 }).collect::<Vec<_>>()}
