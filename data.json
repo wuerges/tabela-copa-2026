@@ -703,7 +703,10 @@
         "name": "Iran",
         "fifa_code": "IRN"
       },
-      "result": null,
+      "result": {
+        "home_goals": 1,
+        "away_goals": 1
+      },
       "date": null
     },
     {
@@ -717,7 +720,10 @@
         "name": "Belgium",
         "fifa_code": "BEL"
       },
-      "result": null,
+      "result": {
+        "home_goals": 1,
+        "away_goals": 5
+      },
       "date": null
     }
   ],
