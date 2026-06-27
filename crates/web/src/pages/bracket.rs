@@ -198,7 +198,7 @@ fn GroupCard(
                                 <td>{s.lost}</td>
                                 <td>{s.goals_for}</td>
                                 <td>{s.goals_against}</td>
-                                <td>{format!("{:+}", s.goal_diff)}</td>
+                                <td>{if s.goal_diff == 0 { "0".to_string() } else { format!("{:+}", s.goal_diff) }}</td>
                             </tr>
                         }
                     }).collect::<Vec<_>>()}
@@ -352,9 +352,19 @@ fn BracketTree(
                                     {if home_clickable {
                                         let cb = on_select.clone();
                                         let rn = round_clone.clone();
+                                        let cb2 = cb.clone();
+                                        let rn2 = rn.clone();
                                         view! {
                                             <span class=format!("{home_class}{clickable_class}")
-                                                on:click=move |_| cb.run((rn.clone(), match_num, true))>
+                                                role="button"
+                                                tabindex="0"
+                                                on:click=move |_| cb.run((rn.clone(), match_num, true))
+                                                on:keydown=move |ev| {
+                                                    if ev.key() == "Enter" || ev.key() == " " {
+                                                        ev.prevent_default();
+                                                        cb2.run((rn2.clone(), match_num, true));
+                                                    }
+                                                }>
                                                 {home_name}
                                             </span>
                                         }.into_any()
@@ -364,9 +374,20 @@ fn BracketTree(
                                     <span class="team-score">{score_display}</span>
                                     {if away_clickable {
                                         let rn = round_clone.clone();
+                                        let os = on_select.clone();
+                                        let rn2 = rn.clone();
+                                        let os2 = os.clone();
                                         view! {
                                             <span class=format!("{away_class}{clickable_class}")
-                                                on:click=move |_| on_select.run((rn.clone(), match_num, false))>
+                                                role="button"
+                                                tabindex="0"
+                                                on:click=move |_| os.run((rn.clone(), match_num, false))
+                                                on:keydown=move |ev| {
+                                                    if ev.key() == "Enter" || ev.key() == " " {
+                                                        ev.prevent_default();
+                                                        os2.run((rn2.clone(), match_num, false));
+                                                    }
+                                                }>
                                                 {away_name}
                                             </span>
                                         }.into_any()
