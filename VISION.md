@@ -28,7 +28,7 @@ Ferramenta CLI + Web App em Rust para acompanhar a Copa do Mundo FIFA 2026. Baix
 ### 3. Chave do mata-mata (`bracket` / Web)
 - Árvore completa (R32 → R16 → QF → SF → Final → 3º Lugar) com layout CSS Grid de 6 colunas equidistantes (`repeat(6, 1fr)`)
 - Preenchimento automático dos confrontos com base nos resultados da fase de grupos
-- R32 match 16 usa as **8 melhores seleções 3º colocadas** (rankeadas), não grupos fixos G/H
+- Formato oficial FIFA 2026: 1A/1B/1G/1H enfrentam os 4 melhores 3ºs (M1/M2/M7/M8), 5º-6º e 7º-8º melhores 3ºs se enfrentam entre si (M15/M16), demais confrontos seguem emparelhamento cruzado 1C↔2F, 1D↔2E, 1I↔2L, 1J↔2K, e runners-up 2A↔2B, 2G↔2H
 - **Propagação round-by-round**: selecionar vencedores em qualquer fase propaga o time para todas as fases seguintes (inclusive Final e 3º Lugar simultaneamente)
 - **Distinção visual** no R32: times com posição garantida (verde) vs. incertos que podem mudar (amarelo itálico), via `clinched_positions()`
 - **Três estados por nó**: finished (placar definido, borda verde), determined (times definidos sem placar, borda azul), pending (slot vazio, opaco)

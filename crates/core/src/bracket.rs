@@ -54,22 +54,22 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
     let thirds = rank_third_places(group_standings);
 
     let r32_slots = vec![
-        ("1A", "3C"),  // M1
-        ("1B", "2C"),  // M2
-        ("1C", "3A"),  // M3
-        ("1D", "2B"),  // M4
+        ("1A", "3A"),  // M1
+        ("1B", "3B"),  // M2
+        ("1C", "2F"),  // M3
+        ("1D", "2E"),  // M4
         ("1E", "2D"),  // M5
-        ("1F", "3B"),  // M6
-        ("1G", "3D"),  // M7
-        ("1H", "2E"),  // M8
-        ("1I", "3E"),  // M9
-        ("1J", "2F"),  // M10
-        ("1K", "3F"),  // M11
-        ("1L", "2G"),  // M12
-        ("2A", "2H"),  // M13
-        ("2I", "2J"),  // M14
-        ("2K", "2L"),  // M15
-        ("3G", "3H"),  // M16 (best thirds)
+        ("1F", "2C"),  // M6
+        ("1G", "3C"),  // M7
+        ("1H", "3D"),  // M8
+        ("1I", "2L"),  // M9
+        ("1J", "2K"),  // M10
+        ("1K", "2J"),  // M11
+        ("1L", "2I"),  // M12
+        ("2A", "2B"),  // M13
+        ("2G", "2H"),  // M14
+        ("3E", "3F"),  // M15
+        ("3G", "3H"),  // M16
     ];
 
     let r32: Vec<BracketSlot> = r32_slots
