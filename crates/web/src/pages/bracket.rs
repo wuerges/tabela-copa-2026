@@ -52,6 +52,9 @@ fn EditableApp(initial: PageData) -> impl IntoView {
     let knockout_results: RwSignal<HashMap<String, KnockoutResult>> =
         RwSignal::new(HashMap::new());
 
+    let ko_selected: RwSignal<std::collections::HashSet<String>> =
+        RwSignal::new(std::collections::HashSet::new());
+
     let user_edited: RwSignal<std::collections::HashSet<String>> =
         RwSignal::new(std::collections::HashSet::new());
 
@@ -124,9 +127,11 @@ fn EditableApp(initial: PageData) -> impl IntoView {
     });
 
     let select_ko_winner = Callback::new(move |(round, match_number, is_home): (String, u32, bool)| {
+        let key = format!("{round}-{match_number}");
+        ko_selected.update(|s| { s.insert(key.clone()); });
         knockout_results.update(|results| {
             results.insert(
-                format!("{round}-{match_number}"),
+                key,
                 KnockoutResult {
                     round: round.clone(),
                     match_number,
@@ -137,7 +142,7 @@ fn EditableApp(initial: PageData) -> impl IntoView {
     });
 
     view! {
-        <BracketTree bracket=Signal::derive(move || bracket.get()) clinched_labels=Signal::derive(move || clinched_labels.get()) on_select=select_ko_winner/>
+        <BracketTree bracket=Signal::derive(move || bracket.get()) clinched_labels=Signal::derive(move || clinched_labels.get()) ko_selected=ko_selected on_select=select_ko_winner/>
         <h2>Fase de Grupos</h2>
         <div class="groups-container">
             {move || matches_by_group.get().iter().map(|(code, matches)| {
@@ -269,6 +274,7 @@ fn match_y_pct(round_idx: usize, match_i: usize) -> f64 {
 fn BracketTree(
     bracket: Signal<Bracket>,
     clinched_labels: Signal<std::collections::HashSet<String>>,
+    ko_selected: RwSignal<std::collections::HashSet<String>>,
     on_select: Callback<(String, u32, bool), ()>,
 ) -> impl IntoView {
     view! {
@@ -348,9 +354,15 @@ fn BracketTree(
                         let home_wins = has_result && slot.home_result.unwrap() > slot.away_result.unwrap();
                         let away_wins = has_result && slot.away_result.unwrap() > slot.home_result.unwrap();
 
-                        let score_display = match (slot.home_result, slot.away_result) {
-                            (Some(h), Some(a)) => format!("{h} - {a}"),
-                            _ => "vs".into(),
+                        let sel_key = format!("{}-{}", slot.round, slot.match_number);
+                        let is_ko_selected = ko_selected.get().contains(&sel_key);
+                        let score_display = if is_ko_selected {
+                            "\u{2713}".into() // checkmark
+                        } else {
+                            match (slot.home_result, slot.away_result) {
+                                (Some(h), Some(a)) => format!("{h} - {a}"),
+                                _ => "vs".into(),
+                            }
                         };
 
                         let is_empty = slot.home_team.is_none() && slot.away_team.is_none();
@@ -413,7 +425,7 @@ fn BracketTree(
                                     } else {
                                         view! { <span class=home_class>{home_name}</span> }.into_any()
                                     }}
-                                    <span class="team-score">{score_display}</span>
+                                    <span class=format!("team-score{}", if is_ko_selected { " selected" } else { "" }) title=if is_ko_selected { "Selecionado manualmente" } else { "" }>{score_display}</span>
                                     {if away_clickable {
                                         let rn = round_name_clone.clone();
                                         let os = on_select.clone();
