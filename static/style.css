@@ -144,53 +144,89 @@ tr.qualified td:nth-child(2) {
 
 /* ── Bracket Tree ─────────────────────────── */
 
-.bracket-tree {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    width: 100%;
-    padding: 1rem 0;
+.bracket-section {
+    background: #0c1524;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 1.5rem 0.75rem 0.75rem;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.bracket-section h2 {
+    margin: 0 0 0.75rem 0.75rem;
+    font-size: 1.2rem;
+    color: #38bdf8;
 }
 
 .bracket-legend {
     display: flex;
-    gap: 1.5rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.7rem;
+    gap: 2rem;
+    margin: 0 0 1rem 0.75rem;
+    font-size: 0.72rem;
     color: #94a3b8;
 }
 
-.legend-item::before {
-    content: '●';
-    margin-right: 0.3rem;
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
 }
 
-.legend-item.clinched::before {
-    color: #4ade80;
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
-.legend-item.uncertain::before {
-    color: #fbbf24;
+.legend-dot.clinched { background: #4ade80; }
+.legend-dot.uncertain { background: #fbbf24; }
+.legend-dot.finished { background: #22c55e; }
+.legend-dot.determined { background: #38bdf8; }
+.legend-dot.pending { background: #475569; }
+
+.bracket-tree {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+    min-width: 900px;
 }
 
 .bracket-round {
     display: flex;
     flex-direction: column;
-    min-width: 0;
-    border-right: 1px solid #1e293b;
-    padding: 0 0.25rem;
-    overflow: visible;
+    padding: 0 6px;
+    position: relative;
 }
 
-.bracket-round:last-child {
-    border-right: none;
+/* Vertical connector lines between rounds */
+.bracket-round:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        #334155 10%,
+        #334155 90%,
+        transparent 100%
+    );
 }
 
 .bracket-round h3 {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: #64748b;
     text-transform: uppercase;
     text-align: center;
-    margin-bottom: 0.25rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #1e293b;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -201,47 +237,61 @@ tr.qualified td:nth-child(2) {
     flex-direction: column;
     justify-content: space-around;
     flex: 1;
+    gap: 4px;
 }
 
 .match-node {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 4px;
-    padding: 0.2rem 0.35rem;
+    background: #111827;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    padding: 0.3rem 0.45rem;
     position: relative;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
-.match-node.finished {
-    border-color: #4ade80;
-    background: #0f2a1f;
-}
-
-.match-node.finished::after {
+/* Horizontal connector stub from right edge */
+.match-node:not(.pending)::after {
     content: '';
     position: absolute;
     top: 50%;
-    right: -0.4rem;
-    width: 0.4rem;
+    right: -7px;
+    width: 6px;
     height: 1px;
-    background: #4ade80;
+    background: #334155;
+}
+
+.match-node.finished {
+    border-color: #166534;
+    background: #052e16;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.08);
+}
+
+.match-node.finished::after {
+    background: #166534;
 }
 
 .match-node.determined {
-    border-color: #38bdf8;
-    background: #0a1a2e;
+    border-color: #1e40af;
+    background: #0c1929;
+    box-shadow: 0 0 6px rgba(56, 189, 248, 0.06);
+}
+
+.match-node.determined::after {
+    background: #1e40af;
 }
 
 .match-node.pending {
-    border-color: #334155;
-    opacity: 0.5;
+    border-color: #1e293b;
+    opacity: 0.35;
 }
 
 .match-teams {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 0.2rem;
+    gap: 0.3rem;
     font-size: 0.7rem;
+    min-height: 1.2rem;
 }
 
 .team {
@@ -249,26 +299,28 @@ tr.qualified td:nth-child(2) {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    line-height: 1.3;
 }
 
 .home-team {
     text-align: left;
-    color: #e2e8f0;
+    color: #cbd5e1;
 }
 
 .away-team {
     text-align: right;
-    color: #e2e8f0;
+    color: #cbd5e1;
 }
 
 .team-score {
     font-weight: 700;
     color: #fbbf24;
-    min-width: 2rem;
+    min-width: 2.2rem;
     text-align: center;
     white-space: nowrap;
-    font-size: 0.65rem;
+    font-size: 0.67rem;
     flex-shrink: 0;
+    padding: 0 0.15rem;
 }
 
 .match-node.finished .team-score {
@@ -284,9 +336,8 @@ tr.qualified td:nth-child(2) {
 }
 
 .match-node.determined .clickable:hover {
-    color: #38bdf8;
-    background: #0a1a2e;
-    text-decoration: none;
+    color: #60a5fa;
+    background: #1e3a5f;
 }
 
 .match-node.finished .clickable {
@@ -295,16 +346,17 @@ tr.qualified td:nth-child(2) {
 }
 
 .match-node.finished .clickable:hover {
-    opacity: 0.8;
+    color: #bbf7d0;
 }
 
 .winner {
     color: #4ade80 !important;
+    font-weight: 700;
 }
 
 .match-node.finished .home-team:not(.winner),
 .match-node.finished .away-team:not(.winner) {
-    color: #64748b;
+    color: #475569;
 }
 
 .clinched {
@@ -447,12 +499,16 @@ td.total {
 /* Tablet: narrower bracket columns, stacked groups */
 @media (max-width: 900px) {
     .bracket-tree {
-        grid-template-columns: repeat(6, 1fr);
+        min-width: 750px;
         font-size: 0.85em;
     }
 
+    .bracket-section {
+        padding: 1rem 0.5rem 0.5rem;
+    }
+
     .bracket-round h3 {
-        font-size: 0.55rem;
+        font-size: 0.5rem;
     }
 
     .match-teams {
@@ -487,23 +543,19 @@ td.total {
         font-size: 1.1rem;
     }
 
+    .bracket-section {
+        padding: 0.75rem 0.25rem 0.5rem;
+        border-radius: 8px;
+    }
+
     .bracket-tree {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-        -webkit-overflow-scrolling: touch;
+        min-width: 650px;
     }
 
-    .bracket-round {
-        display: inline-block;
-        vertical-align: top;
-        min-width: 140px;
-        border-right: 1px solid #1e293b;
-    }
-
-    .bracket-round:last-child {
-        border-right: none;
-        min-width: 120px;
+    .bracket-legend {
+        flex-wrap: wrap;
+        gap: 1rem;
+        font-size: 0.65rem;
     }
 
     .groups-container {

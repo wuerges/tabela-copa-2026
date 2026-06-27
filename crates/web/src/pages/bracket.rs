@@ -137,6 +137,7 @@ fn EditableApp(initial: PageData) -> impl IntoView {
     });
 
     view! {
+        <BracketTree bracket=Signal::derive(move || bracket.get()) clinched_labels=Signal::derive(move || clinched_labels.get()) on_select=select_ko_winner/>
         <h2>Fase de Grupos</h2>
         <div class="groups-container">
             {move || matches_by_group.get().iter().map(|(code, matches)| {
@@ -156,7 +157,6 @@ fn EditableApp(initial: PageData) -> impl IntoView {
                 }
             }).collect::<Vec<_>>()}
         </div>
-        <BracketTree bracket=Signal::derive(move || bracket.get()) clinched_labels=Signal::derive(move || clinched_labels.get()) on_select=select_ko_winner/>
     }
 }
 
@@ -261,12 +261,16 @@ fn BracketTree(
     on_select: Callback<(String, u32, bool), ()>,
 ) -> impl IntoView {
     view! {
-        <h2>Mata-Mata</h2>
-        <div class="bracket-legend">
-            <span class="legend-item clinched">Posicao garantida</span>
-            <span class="legend-item uncertain">Pode mudar</span>
-        </div>
-        <div class="bracket-tree">
+        <div class="bracket-section">
+            <h2>Mata-Mata</h2>
+            <div class="bracket-legend">
+                <span class="legend-item"><span class="legend-dot clinched"></span>Posicao garantida</span>
+                <span class="legend-item"><span class="legend-dot uncertain"></span>Pode mudar</span>
+                <span class="legend-item"><span class="legend-dot finished"></span>Resultado</span>
+                <span class="legend-item"><span class="legend-dot determined"></span>Definido</span>
+                <span class="legend-item"><span class="legend-dot pending"></span>Pendente</span>
+            </div>
+            <div class="bracket-tree">
             {move || {
                 let b = bracket.get();
                 b.rounds.iter().enumerate().map(|(ri, round)| {
@@ -409,6 +413,7 @@ fn BracketTree(
                     }.into_any()
                 }).collect::<Vec<_>>()
             }}
+        </div>
         </div>
     }
 }
