@@ -31,8 +31,10 @@ fn resolve_slot(label: &str, team_map: &HashMap<String, Team>, thirds: &[(GroupC
         return None;
     }
 
-    if label.starts_with('3') && label.len() == 2 {
-        let rank_char = label.chars().nth(1).unwrap_or('A');
+    // "3A" = best-ranked 3rd place team, "3B" = 2nd-best, etc.
+    // These are RANKED (not group-specific) third-place qualifiers per FIFA 2026 format
+    if label.len() == 2 && label.starts_with('3') {
+        let rank_char = label.chars().nth(1).unwrap(); // safe: len() == 2
         let rank = (rank_char as u32).saturating_sub('A' as u32) as usize;
         if rank < thirds.len() {
             return Some(thirds[rank].1.team.clone());
