@@ -15,12 +15,6 @@ impl std::fmt::Display for GroupCode {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Group {
-    pub code: GroupCode,
-    pub teams: Vec<Team>,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Copy)]
 pub enum MatchOutcome {
     HomeWin,
