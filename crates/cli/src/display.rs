@@ -27,7 +27,11 @@ pub fn print_group_table(group: &GroupCode, standings: &[Standing]) {
         row.add_cell(Cell::new(s.lost.to_string()));
         row.add_cell(Cell::new(s.goals_for.to_string()));
         row.add_cell(Cell::new(s.goals_against.to_string()));
-        row.add_cell(Cell::new(format!("{:+}", s.goal_diff)));
+        row.add_cell(Cell::new(if s.goal_diff == 0 {
+            "0".to_string()
+        } else {
+            format!("{:+}", s.goal_diff)
+        }));
         row.add_cell(Cell::new(s.points.to_string()));
 
         table.add_row(row);
@@ -66,7 +70,11 @@ pub fn print_third_place_ranking(group_standings: &[(GroupCode, Vec<Standing>)])
         row.add_cell(Cell::new(s.lost.to_string()));
         row.add_cell(Cell::new(s.goals_for.to_string()));
         row.add_cell(Cell::new(s.goals_against.to_string()));
-        row.add_cell(Cell::new(format!("{:+}", s.goal_diff)));
+        row.add_cell(Cell::new(if s.goal_diff == 0 {
+            "0".to_string()
+        } else {
+            format!("{:+}", s.goal_diff)
+        }));
         row.add_cell(Cell::new(s.points.to_string()));
 
         table.add_row(row);
