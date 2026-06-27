@@ -6,6 +6,13 @@ const TOP_THIRDS: usize = 8;
 const MAX_EXHAUSTIVE_SCENARIOS: u64 = 100_000;
 const MONTE_CARLO_SAMPLES: u64 = 50_000;
 
+/// Canonical result set for enumeration/sampling
+const RESULTS: [MatchResult; 3] = [
+    MatchResult { home_goals: 1, away_goals: 0 },
+    MatchResult { home_goals: 0, away_goals: 0 },
+    MatchResult { home_goals: 0, away_goals: 1 },
+];
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ThirdPlaceSimulation {
     pub teams: Vec<TeamQualificationChance>,
@@ -95,6 +102,20 @@ pub fn simulate_guaranteed_thirds(matches: &[Match]) -> ThirdPlaceSimulation {
         }
     }
 
+    // Precompute standings once per group to avoid redundant calculations
+    let mut group_standings_cache: HashMap<String, Vec<Standing>> = HashMap::new();
+    for group_code in GROUP_CODES {
+        let group_matches: Vec<Match> = matches
+            .iter()
+            .filter(|m| m.group.0 == *group_code)
+            .cloned()
+            .collect();
+        if !group_matches.is_empty() {
+            group_standings_cache
+                .insert(group_code.to_string(), calculate_standings(&group_matches));
+        }
+    }
+
     let mut teams: Vec<TeamQualificationChance> = Vec::new();
 
     for fifa_code in &all_teams {
@@ -103,12 +124,14 @@ pub fn simulate_guaranteed_thirds(matches: &[Match]) -> ThirdPlaceSimulation {
         let second_count = second_place_counts.get(fifa_code).copied().unwrap_or(0);
         let total_qual = first_count + second_count + third_count;
 
-        let (team, group) = team_info[fifa_code].clone();
+        let (team, group) = match team_info.get(fifa_code) {
+            Some(info) => info.clone(),
+            None => continue,
+        };
 
-        let group_matches: Vec<&Match> = matches.iter().filter(|m| m.group.0 == group.0).collect();
-        let standings =
-            calculate_standings(&group_matches.iter().cloned().cloned().collect::<Vec<_>>());
-        let standing = standings.iter().find(|s| s.team.fifa_code == *fifa_code);
+        let standings = group_standings_cache.get(&group.0);
+        let standing = standings
+            .and_then(|s| s.iter().find(|s| s.team.fifa_code == *fifa_code));
 
         let (points, goal_diff) = standing
             .map(|s| (s.points, s.goal_diff))
@@ -175,13 +198,7 @@ fn simulate_exhaustive(
 
     let match_idx = unplayed[idx];
 
-    let results = [
-        MatchResult { home_goals: 1, away_goals: 0 },
-        MatchResult { home_goals: 0, away_goals: 0 },
-        MatchResult { home_goals: 0, away_goals: 1 },
-    ];
-
-    for result in &results {
+    for result in &RESULTS {
         current[match_idx].result = Some(*result);
         simulate_exhaustive(
             original,
@@ -210,22 +227,15 @@ fn simulate_monte_carlo(
 
     let mut current = original.to_vec();
 
-    let results = [
-        MatchResult { home_goals: 1, away_goals: 0 },
-        MatchResult { home_goals: 0, away_goals: 0 },
-        MatchResult { home_goals: 0, away_goals: 1 },
-    ];
-
     for s in 0..samples {
-        let mut hasher = DefaultHasher::new();
-        s.hash(&mut hasher);
-
         for (i, &match_idx) in unplayed.iter().enumerate() {
-            (i as u64).hash(&mut hasher);
+            // Seed a fresh hasher per match to avoid sequential correlation
+            let mut hasher = DefaultHasher::new();
             s.hash(&mut hasher);
+            (i as u64).hash(&mut hasher);
             let h = hasher.finish();
             let result_idx = (h % 3) as usize;
-            current[match_idx].result = Some(results[result_idx]);
+            current[match_idx].result = Some(RESULTS[result_idx]);
         }
 
         let gs = group_standings(&current);
