@@ -98,11 +98,15 @@ fn parse_football_txt(content: &str) -> Result<BTreeMap<String, Vec<Match>>, Str
 
 fn make_code(name: &str) -> String {
     let code: &str = match name {
+        // Explicitly handled: ambiguous or non-standard prefixes
         "Austria" => "AUT",
         "Australia" => "AUS",
         "Iran" => "IRN",
         "Iraq" => "IRQ",
         "South Korea" => "KOR",
+        "Korea Republic" => "KOR",
+        "North Korea" => "PRK",
+        "Korea DPR" => "PRK",
         "South Africa" => "RSA",
         "Czech Republic" => "CZE",
         "Bosnia & Herzegovina" => "BIH",
@@ -117,7 +121,63 @@ fn make_code(name: &str) -> String {
         "United States" | "USA" => "USA",
         "United Arab Emirates" | "UAE" => "UAE",
         "New Zealand" => "NZL",
-        "North Korea" => "PRK",
+        // Teams whose first-3-letters heuristic produces wrong codes
+        "Netherlands" => "NED",
+        "Switzerland" => "SUI",
+        "China PR" => "CHN",
+        "China" => "CHN",
+        "Croatia" => "CRO",
+        "Portugal" => "POR",
+        "Spain" => "ESP",
+        "Germany" => "GER",
+        "Italy" => "ITA",
+        "Japan" => "JPN",
+        "Morocco" => "MAR",
+        "Senegal" => "SEN",
+        "Serbia" => "SRB",
+        "Slovakia" => "SVK",
+        "Slovenia" => "SVN",
+        "Türkiye" | "Turkey" => "TUR",
+        "Wales" => "WAL",
+        "Scotland" => "SCO",
+        "Paraguay" => "PAR",
+        "Poland" => "POL",
+        "Nigeria" => "NGA",
+        "Algeria" => "ALG",
+        "Denmark" => "DEN",
+        "Sweden" => "SWE",
+        "Greece" => "GRE",
+        "Albania" => "ALB",
+        "Belgium" => "BEL",
+        "Canada" => "CAN",
+        "Qatar" => "QAT",
+        "Ecuador" => "ECU",
+        "Egypt" => "EGY",
+        "Ghana" => "GHA",
+        "Tunisia" => "TUN",
+        "Cameroon" => "CMR",
+        "Romania" => "ROU",
+        "Ukraine" => "UKR",
+        "Finland" => "FIN",
+        "Norway" => "NOR",
+        "Iceland" => "ISL",
+        "Hungary" => "HUN",
+        "Bulgaria" => "BUL",
+        "Republic of Ireland" => "IRL",
+        "Ireland" => "IRL",
+        "Northern Ireland" => "NIR",
+        "Chile" => "CHI",
+        "Colombia" => "COL",
+        "Peru" => "PER",
+        "Uruguay" => "URU",
+        "Costa Rica" => "CRC",
+        "Mexico" => "MEX",
+        "Panama" => "PAN",
+        "Honduras" => "HON",
+        "Jamaica" => "JAM",
+        "El Salvador" => "SLV",
+        "Venezuela" => "VEN",
+        "Bolivia" => "BOL",
         _ => "",
     };
 
@@ -155,7 +215,8 @@ fn parse_match_line(line: &str) -> Option<(String, String, Option<MatchResult>)>
         return None;
     }
 
-    let re = regex_lite::Regex::new(r"(\d+)-(\d+)").ok()?;
+    static SCORE_RE: std::sync::OnceLock<regex_lite::Regex> = std::sync::OnceLock::new();
+    let re = SCORE_RE.get_or_init(|| regex_lite::Regex::new(r"(\d+)-(\d+)").unwrap());
     if let Some(score_match) = re.find(match_part) {
         let score_str = score_match.as_str();
         let home_name = match_part[..score_match.start()].trim().to_string();
