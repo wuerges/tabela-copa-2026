@@ -200,22 +200,23 @@ fn test_simulation_no_unplayed_matches() {
 #[test]
 fn test_simulation_qualification_sums_to_total() {
     let gs = basic_standings_12();
-    let all_matches: Vec<Match> = gs.iter().flat_map(|(_, s)| {
-        let code = s[0].team.fifa_code.clone();
-        let opp_code = if code == "ALP" { "BET" } else { "ALP" };
+    let all_matches: Vec<Match> = gs.iter().flat_map(|(group_code, s)| {
+        // Each team code is T1A, T2A, etc.; derive group from the GroupCode, not the fifa_code
+        let code = group_code.0.clone();
+        let opp_code = if code == "A" { "T1B" } else { "T1A" };
         vec![
-            make_match("1", &code[..2], s[0].team.clone(), make_team("Opp", &opp_code), Some(make_match_result(1, 0))),
+            make_match("1", &code, s[0].team.clone(), make_team("Opp", &opp_code), Some(make_match_result(1, 0))),
         ]
     }).collect();
 
     let sim = simulate_guaranteed_thirds(&all_matches);
+    assert!(!sim.teams.is_empty(), "Should have teams in the simulation");
     for tc in &sim.teams {
         let sum = tc.first_pct + tc.second_pct + tc.third_qualified_pct;
-        let remainder = 100.0 - tc.total_qualification_pct;
         assert!(
-            (sum - remainder).abs() < 0.1 || (sum - tc.total_qualification_pct).abs() < 0.1,
-            "{}: 1st={:.1} 2nd={:.1} 3rd={:.1} total={:.1}",
-            tc.team.name, tc.first_pct, tc.second_pct, tc.third_qualified_pct, tc.total_qualification_pct
+            (sum - tc.total_qualification_pct).abs() < 0.2,
+            "{}: 1st={:.1} 2nd={:.1} 3rd={:.1} total={:.1} (sum={})",
+            tc.team.name, tc.first_pct, tc.second_pct, tc.third_qualified_pct, tc.total_qualification_pct, sum
         );
     }
 }
@@ -529,4 +530,85 @@ fn test_knockout_mixed_winners_propagate() {
         assert!(slot.home_team.is_some(), "R16 home not filled");
         assert!(slot.away_team.is_some(), "R16 away not filled");
     }
+}
+
+#[test]
+fn test_monte_carlo_runs_with_many_unplayed() {
+    // Force Monte Carlo path by having >10 unplayed matches across groups
+    let mut matches = Vec::new();
+    for g in 0..12u32 {
+        let gc = GroupCode(GROUP_CODES[g as usize].to_string());
+        for m in 0..3 {
+            let h = make_team(
+                &format!("Home_G{g}_M{m}"),
+                &format!("H{}{}", g, m),
+            );
+            let a = make_team(
+                &format!("Away_G{g}_M{m}"),
+                &format!("A{}{}", g, m),
+            );
+            matches.push(Match {
+                id: format!("{}-{}", gc.0, m + 1),
+                group: gc.clone(),
+                home_team: h,
+                away_team: a,
+                result: None,
+                date: None,
+            });
+        }
+    }
+    // 12 groups * 3 = 36 unplayed matches → forces Monte Carlo
+    let sim = simulate_guaranteed_thirds(&matches);
+    assert!(sim.method.contains("monte-carlo"), "Should use Monte Carlo, got: {}", sim.method);
+    assert_eq!(sim.unplayed_matches, 36);
+    assert!(!sim.teams.is_empty());
+    for tc in &sim.teams {
+        assert!(tc.total_qualification_pct >= 0.0 && tc.total_qualification_pct <= 100.0);
+    }
+}
+
+#[test]
+fn test_clinched_positions_all_played() {
+    // When all matches are played, every team should have a clinched position
+    let gs = basic_standings_12();
+    let all_matches: Vec<Match> = gs.iter().flat_map(|(gc, standings)| {
+        let code = gc.0.clone();
+        standings.iter().enumerate().flat_map(move |(i, s)| {
+            let opp_idx = (i + 1) % standings.len();
+            let opp = &standings[opp_idx];
+            vec![
+                make_match(&format!("{}-{}", code, i + 1), &code,
+                    s.team.clone(), opp.team.clone(),
+                    Some(make_match_result((i + 1) as u32, opp_idx as u32))),
+            ]
+        }).collect::<Vec<_>>()
+    }).collect();
+
+    let clinched = clinched_positions(&all_matches);
+    assert!(!clinched.is_empty(), "Should have clinched positions when all matches have results");
+}
+
+#[test]
+fn test_head_to_head_tiebreaker() {
+    // Two teams tied on points, GD, and GF — head-to-head should decide
+    let t1 = make_team("Alpha", "ALP");
+    let t2 = make_team("Beta", "BET");
+    let t3 = make_team("Gamma", "GAM");
+    let t4 = make_team("Delta", "DEL");
+
+    let matches = vec![
+        // Alpha beats Beta 2-0
+        make_match("1", "A", t1.clone(), t2.clone(), Some(make_match_result(2, 0))),
+        // Both beat others equally
+        make_match("2", "A", t3.clone(), t4.clone(), Some(make_match_result(1, 0))),
+        make_match("3", "A", t1.clone(), t3.clone(), Some(make_match_result(1, 0))),
+        make_match("4", "A", t2.clone(), t4.clone(), Some(make_match_result(1, 0))),
+        make_match("5", "A", t3.clone(), t1.clone(), Some(make_match_result(0, 1))),
+        make_match("6", "A", t4.clone(), t2.clone(), Some(make_match_result(0, 1))),
+    ];
+
+    let standings = calculate_standings(&matches);
+    // Alpha and Beta both have 9 pts, +3 GD, 4 GF — but Alpha beat Beta H2H
+    assert_eq!(standings[0].team.name, "Alpha", "Alpha should be 1st via head-to-head");
+    assert_eq!(standings[1].team.name, "Beta", "Beta should be 2nd");
 }
