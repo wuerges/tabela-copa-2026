@@ -10,8 +10,8 @@ pub fn App() -> impl IntoView {
         <header>
             <h1>Classificados Copa do Mundo 2026</h1>
             <nav>
-                <a href="/">Bracket</a>
-                <a href="/guaranteed-thirds">Probabilidades</a>
+                <A href="">Bracket</A>
+                <A href="/guaranteed-thirds">Probabilidades</A>
             </nav>
         </header>
         <main>
