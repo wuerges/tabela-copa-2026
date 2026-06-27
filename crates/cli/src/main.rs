@@ -18,54 +18,60 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Download match data from openfootball
     Fetch,
+    /// Show group standings, optionally filtered by group
     Standings {
         #[arg(short, long)]
         group: Option<String>,
     },
+    /// Show ranking of best third-placed teams
     #[command(name = "best-thirds")]
     BestThirds,
+    /// Show the full knockout bracket
     Bracket,
+    /// Simulate third-place qualification probabilities
     #[command(name = "guaranteed-thirds")]
     GuaranteedThirds,
+    /// Show general statistics (goals, draws, etc.)
     Stats,
 }
 
-fn load(path: &std::path::Path) -> Vec<Match> {
-    match load_data(&path.to_string_lossy()) {
-        Ok(d) => d.into_values().flatten().collect(),
-        Err(e) => {
-            eprintln!("Error loading {}: {}", path.display(), e);
-            Vec::new()
-        }
-    }
+fn load(path: &std::path::Path) -> Result<Vec<Match>, String> {
+    load_data(&path.to_string_lossy()).map(|d| d.into_values().flatten().collect())
 }
 
 fn main() {
     let cli = Cli::parse();
-    let path = &cli.data_file;
+    let path = cli.data_file.clone();
 
+    let result = run(cli, &path);
+    if let Err(e) = result {
+        eprintln!("Error: {e}");
+        std::process::exit(1);
+    }
+}
+
+fn run(cli: Cli, path: &std::path::Path) -> Result<(), String> {
     match cli.command {
         Commands::Fetch => {
-            let runtime = tokio::runtime::Runtime::new().unwrap();
+            let runtime = tokio::runtime::Runtime::new()
+                .map_err(|e| format!("Failed to create async runtime: {e}"))?;
             runtime.block_on(async {
-                match fetch::fetch_data().await {
-                    Ok(data) => {
-                        if let Err(e) = save_data(&data, &path.to_string_lossy()) {
-                            eprintln!("Error saving: {}", e);
-                        } else {
-                            let total: usize = data.values().map(|v| v.len()).sum();
-                            println!("Fetched {total} matches across {} groups.", data.len());
-                        }
-                    }
-                    Err(e) => eprintln!("Error: {e}"),
-                }
-            });
+                let data = fetch::fetch_data().await?;
+                save_data(&data, &path.to_string_lossy())?;
+                let total: usize = data.values().map(|v| v.len()).sum();
+                println!("Fetched {total} matches across {} groups.", data.len());
+                Ok(())
+            })
         }
 
         Commands::Standings { group } => {
-            let all_matches = load(path);
-            if all_matches.is_empty() { return; }
+            let all_matches = load(path)?;
+            if all_matches.is_empty() {
+                eprintln!("No matches loaded.");
+                return Ok(());
+            }
 
             if let Some(g) = group {
                 let group_matches: Vec<Match> = all_matches
@@ -74,7 +80,7 @@ fn main() {
                     .collect();
                 if group_matches.is_empty() {
                     eprintln!("Group '{g}' not found.");
-                    return;
+                    return Ok(());
                 }
                 let standings = calculate_standings(&group_matches);
                 display::print_group_table(&GroupCode(g.to_uppercase()), &standings);
@@ -86,34 +92,51 @@ fn main() {
                 }
                 display::print_third_place_ranking(&gs);
             }
+            Ok(())
         }
 
         Commands::BestThirds => {
-            let all_matches = load(path);
-            if all_matches.is_empty() { return; }
+            let all_matches = load(path)?;
+            if all_matches.is_empty() {
+                eprintln!("No matches loaded.");
+                return Ok(());
+            }
             let gs = group_standings(&all_matches);
             display::print_third_place_ranking(&gs);
+            Ok(())
         }
 
         Commands::Bracket => {
-            let all_matches = load(path);
-            if all_matches.is_empty() { return; }
+            let all_matches = load(path)?;
+            if all_matches.is_empty() {
+                eprintln!("No matches loaded.");
+                return Ok(());
+            }
             let gs = group_standings(&all_matches);
             let bracket = generate_bracket(&gs);
             display::print_bracket(&bracket);
+            Ok(())
         }
 
         Commands::GuaranteedThirds => {
-            let all_matches = load(path);
-            if all_matches.is_empty() { return; }
+            let all_matches = load(path)?;
+            if all_matches.is_empty() {
+                eprintln!("No matches loaded.");
+                return Ok(());
+            }
             let sim = simulate_guaranteed_thirds(&all_matches);
             display::print_simulation(&sim);
+            Ok(())
         }
 
         Commands::Stats => {
-            let all_matches = load(path);
-            if all_matches.is_empty() { return; }
+            let all_matches = load(path)?;
+            if all_matches.is_empty() {
+                eprintln!("No matches loaded.");
+                return Ok(());
+            }
             display::print_stats(&all_matches);
+            Ok(())
         }
     }
 }
