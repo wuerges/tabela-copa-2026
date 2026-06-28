@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="100%" height="100%">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&amp;display=swap');
+        text {
+            font-family: 'Poppins', -apple-system, sans-serif;
+        }
+        .main-title {
+            font-size: 38px;
+            font-weight: 800;
+            fill: #0f172a;
+            text-anchor: middle;
+            letter-spacing: 2px;
+        }
+        .column-header {
+            font-size: 13px;
+            font-weight: 700;
+            fill: #64748b;
+            text-anchor: middle;
+            text-transform: uppercase;
+        }
+        .match-box {
+            fill: #ffffff;
+            stroke: #cbd5e1;
+            stroke-width: 1.5;
+            rx: 6px;
+        }
+        .match-date {
+            font-size: 11px;
+            font-weight: 700;
+            fill: #0284c7;
+            text-anchor: middle;
+        }
+        .match-info {
+            font-size: 10px;
+            font-weight: 600;
+            fill: #1e293b;
+            text-anchor: middle;
+        }
+        .team-slot {
+            fill: #f8fafc;
+            stroke: #e2e8f0;
+            stroke-width: 1;
+            rx: 4px;
+        }
+        .line {
+            fill: none;
+            stroke: #94a3b8;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .final-title {
+            font-size: 24px;
+            font-weight: 800;
+            fill: #1e293b;
+            text-anchor: middle;
+        }
+    </style>
+    
+    <rect width="1600" height="1000" fill="#f4f6f9" />
+    
+    <text x="800" y="60" class="main-title">COPA DO MUNDO 2026</text>
+    
+    <text x="155" y="120" class="column-header">Segunda fase</text>
+    <text x="335" y="120" class="column-header">Oitavas</text>
+    <text x="515" y="120" class="column-header">Quartas</text>
+    <text x="695" y="120" class="column-header">Semifinal</text>
+        
+    <text x="905" y="120" class="column-header">Semifinal</text>
+    <text x="1085" y="120" class="column-header">Quartas</text>
+    <text x="1265" y="120" class="column-header">Oitavas</text>
+    <text x="1445" y="120" class="column-header">Segunda fase</text>
+
+    <rect x="80" y="150" width="150" height="75" class="match-box" /><rect x="85" y="174" width="140" height="20" class="team-slot" /><rect x="85" y="198" width="140" height="20" class="team-slot" /><text x="155" y="166" class="match-date">29 Junho - 17:30</text><text x="155" y="238" class="match-info">EUA, Boston</text>
+    <rect x="80" y="250" width="150" height="75" class="match-box" /><rect x="85" y="274" width="140" height="20" class="team-slot" /><rect x="85" y="298" width="140" height="20" class="team-slot" /><text x="155" y="266" class="match-date">30 Junho - 18:00</text><text x="155" y="338" class="match-info">EUA, NY/NJ</text>
+    <rect x="80" y="350" width="150" height="75" class="match-box" /><rect x="85" y="374" width="140" height="20" class="team-slot" /><rect x="85" y="398" width="140" height="20" class="team-slot" /><text x="155" y="366" class="match-date">28 Junho - 16:00</text><text x="155" y="438" class="match-info">EUA, Los Angeles</text>
+    <rect x="80" y="450" width="150" height="75" class="match-box" /><rect x="85" y="474" width="140" height="20" class="team-slot" /><rect x="85" y="498" width="140" height="20" class="team-slot" /><text x="155" y="466" class="match-date">30 Junho - 22:00</text><text x="155" y="538" class="match-info">México, Guadalupe</text>
+    <rect x="80" y="550" width="150" height="75" class="match-box" /><rect x="85" y="574" width="140" height="20" class="team-slot" /><rect x="85" y="598" width="140" height="20" class="team-slot" /><text x="155" y="566" class="match-date">3 Julho - 20:00</text><text x="155" y="638" class="match-info">Canadá, Toronto</text>
+    <rect x="80" y="650" width="150" height="75" class="match-box" /><rect x="85" y="674" width="140" height="20" class="team-slot" /><rect x="85" y="698" width="140" height="20" class="team-slot" /><text x="155" y="666" class="match-date">2 Julho - 16:00</text><text x="155" y="738" class="match-info">EUA, Los Angeles</text>
+    <rect x="80" y="750" width="150" height="75" class="match-box" /><rect x="85" y="774" width="140" height="20" class="team-slot" /><rect x="85" y="798" width="140" height="20" class="team-slot" /><text x="155" y="766" class="match-date">2 Julho - 21:00</text><text x="155" y="838" class="match-info">EUA, Santa Clara</text>
+    <rect x="80" y="850" width="150" height="75" class="match-box" /><rect x="85" y="874" width="140" height="20" class="team-slot" /><rect x="85" y="898" width="140" height="20" class="team-slot" /><text x="155" y="866" class="match-date">1 Julho - 17:00</text><text x="155" y="938" class="match-info">EUA, Seattle</text>
+
+    <rect x="260" y="200" width="150" height="75" class="match-box" /><rect x="265" y="224" width="140" height="20" class="team-slot" /><rect x="265" y="248" width="140" height="20" class="team-slot" /><text x="335" y="216" class="match-date">4 Julho - 18:00</text><text x="335" y="288" class="match-info">EUA, Philadelphia</text>
+    <path d="M 230 187 H 245 V 237 H 260" class="line" />
+    <path d="M 230 287 H 245 V 237 H 260" class="line" />
+    <rect x="260" y="400" width="150" height="75" class="match-box" /><rect x="265" y="424" width="140" height="20" class="team-slot" /><rect x="265" y="448" width="140" height="20" class="team-slot" /><text x="335" y="416" class="match-date">4 Julho - 14:00</text><text x="335" y="488" class="match-info">EUA, Houston</text>
+    <path d="M 230 387 H 245 V 437 H 260" class="line" />
+    <path d="M 230 487 H 245 V 437 H 260" class="line" />
+    <rect x="260" y="600" width="150" height="75" class="match-box" /><rect x="265" y="624" width="140" height="20" class="team-slot" /><rect x="265" y="648" width="140" height="20" class="team-slot" /><text x="335" y="616" class="match-date">6 Julho - 16:00</text><text x="335" y="688" class="match-info">EUA, Dallas</text>
+    <path d="M 230 587 H 245 V 637 H 260" class="line" />
+    <path d="M 230 687 H 245 V 637 H 260" class="line" />
+    <rect x="260" y="800" width="150" height="75" class="match-box" /><rect x="265" y="824" width="140" height="20" class="team-slot" /><rect x="265" y="848" width="140" height="20" class="team-slot" /><text x="335" y="816" class="match-date">7 Julho - 21:00</text><text x="335" y="888" class="match-info">EUA, Seattle</text>
+    <path d="M 230 787 H 245 V 837 H 260" class="line" />
+    <path d="M 230 887 H 245 V 837 H 260" class="line" />
+
+    <rect x="440" y="300" width="150" height="75" class="match-box" /><rect x="445" y="324" width="140" height="20" class="team-slot" /><rect x="445" y="348" width="140" height="20" class="team-slot" /><text x="515" y="316" class="match-date">9 Julho - 17:00</text><text x="515" y="388" class="match-info">EUA, Boston</text>
+    <path d="M 410 237 H 425 V 337 H 440" class="line" />
+    <path d="M 410 437 H 425 V 337 H 440" class="line" />
+    <rect x="440" y="700" width="150" height="75" class="match-box" /><rect x="445" y="724" width="140" height="20" class="team-slot" /><rect x="445" y="748" width="140" height="20" class="team-slot" /><text x="515" y="716" class="match-date">10 Julho - 16:00</text><text x="515" y="788" class="match-info">EUA, Los Angeles</text>
+    <path d="M 410 637 H 425 V 737 H 440" class="line" />
+    <path d="M 410 837 H 425 V 737 H 440" class="line" />
+
+    <rect x="620" y="500" width="150" height="75" class="match-box" /><rect x="625" y="524" width="140" height="20" class="team-slot" /><rect x="625" y="548" width="140" height="20" class="team-slot" /><text x="695" y="516" class="match-date">14 Julho - 16:00</text><text x="695" y="588" class="match-info">EUA, Dallas</text>
+    <path d="M 590 337 H 605 V 537 H 620" class="line" />
+    <path d="M 590 737 H 605 V 537 H 620" class="line" />
+
+    <rect x="1370" y="150" width="150" height="75" class="match-box" /><rect x="1375" y="174" width="140" height="20" class="team-slot" /><rect x="1375" y="198" width="140" height="20" class="team-slot" /><text x="1445" y="166" class="match-date">29 Junho - 14:00</text><text x="1445" y="238" class="match-info">EUA, Houston</text>
+    <rect x="1370" y="250" width="150" height="75" class="match-box" /><rect x="1375" y="274" width="140" height="20" class="team-slot" /><rect x="1375" y="298" width="140" height="20" class="team-slot" /><text x="1445" y="266" class="match-date">30 Junho - 14:00</text><text x="1445" y="338" class="match-info">EUA, Dallas</text>
+    <rect x="1370" y="350" width="150" height="75" class="match-box" /><rect x="1375" y="374" width="140" height="20" class="team-slot" /><rect x="1375" y="398" width="140" height="20" class="team-slot" /><text x="1445" y="366" class="match-date">1 Julho - 22:00</text><text x="1445" y="438" class="match-info">México, C. México</text>
+    <rect x="1370" y="450" width="150" height="75" class="match-box" /><rect x="1375" y="474" width="140" height="20" class="team-slot" /><rect x="1375" y="498" width="140" height="20" class="team-slot" /><text x="1445" y="466" class="match-date">1 Julho - 13:00</text><text x="1445" y="538" class="match-info">EUA, Atlanta</text>
+    <rect x="1370" y="550" width="150" height="75" class="match-box" /><rect x="1375" y="574" width="140" height="20" class="team-slot" /><rect x="1375" y="598" width="140" height="20" class="team-slot" /><text x="1445" y="566" class="match-date">3 Julho - 19:00</text><text x="1445" y="638" class="match-info">EUA, Miami</text>
+    <rect x="1370" y="650" width="150" height="75" class="match-box" /><rect x="1375" y="674" width="140" height="20" class="team-slot" /><rect x="1375" y="698" width="140" height="20" class="team-slot" /><text x="1445" y="666" class="match-date">3 Julho - 15:00</text><text x="1445" y="738" class="match-info">EUA, Dallas</text>
+    <rect x="1370" y="750" width="150" height="75" class="match-box" /><rect x="1375" y="774" width="140" height="20" class="team-slot" /><rect x="1375" y="798" width="140" height="20" class="team-slot" /><text x="1445" y="766" class="match-date">3 Julho - 00:00</text><text x="1445" y="838" class="match-info">Canadá, Vancouver</text>
+    <rect x="1370" y="850" width="150" height="75" class="match-box" /><rect x="1375" y="874" width="140" height="20" class="team-slot" /><rect x="1375" y="898" width="140" height="20" class="team-slot" /><text x="1445" y="866" class="match-date">4 Julho - 22:30</text><text x="1445" y="938" class="match-info">EUA, Kansas City</text>
+
+    <rect x="1190" y="200" width="150" height="75" class="match-box" /><rect x="1195" y="224" width="140" height="20" class="team-slot" /><rect x="1195" y="248" width="140" height="20" class="team-slot" /><text x="1265" y="216" class="match-date">5 Julho - 17:00</text><text x="1265" y="288" class="match-info">EUA, NY/NJ</text>
+    <path d="M 1370 187 H 1355 V 237 H 1340" class="line" />
+    <path d="M 1370 287 H 1355 V 237 H 1340" class="line" />
+    <rect x="1190" y="400" width="150" height="75" class="match-box" /><rect x="1195" y="424" width="140" height="20" class="team-slot" /><rect x="1195" y="448" width="140" height="20" class="team-slot" /><text x="1265" y="416" class="match-date">6 Julho - 21:00</text><text x="1265" y="488" class="match-info">México, C. México</text>
+    <path d="M 1370 387 H 1355 V 437 H 1340" class="line" />
+    <path d="M 1370 487 H 1355 V 437 H 1340" class="line" />
+    <rect x="1190" y="600" width="150" height="75" class="match-box" /><rect x="1195" y="624" width="140" height="20" class="team-slot" /><rect x="1195" y="648" width="140" height="20" class="team-slot" /><text x="1265" y="616" class="match-date">7 Julho - 13:00</text><text x="1265" y="688" class="match-info">EUA, Atlanta</text>
+    <path d="M 1370 587 H 1355 V 637 H 1340" class="line" />
+    <path d="M 1370 687 H 1355 V 637 H 1340" class="line" />
+    <rect x="1190" y="800" width="150" height="75" class="match-box" /><rect x="1195" y="824" width="140" height="20" class="team-slot" /><rect x="1195" y="848" width="140" height="20" class="team-slot" /><text x="1265" y="816" class="match-date">7 Julho - 17:00</text><text x="1265" y="888" class="match-info">Canadá, Vancouver</text>
+    <path d="M 1370 787 H 1355 V 837 H 1340" class="line" />
+    <path d="M 1370 887 H 1355 V 837 H 1340" class="line" />
+
+    <rect x="1010" y="300" width="150" height="75" class="match-box" /><rect x="1015" y="324" width="140" height="20" class="team-slot" /><rect x="1015" y="348" width="140" height="20" class="team-slot" /><text x="1085" y="316" class="match-date">11 Julho - 18:00</text><text x="1085" y="388" class="match-info">EUA, Miami</text>
+    <path d="M 1190 237 H 1175 V 337 H 1160" class="line" />
+    <path d="M 1190 437 H 1175 V 337 H 1160" class="line" />
+    <rect x="1010" y="700" width="150" height="75" class="match-box" /><rect x="1015" y="724" width="140" height="20" class="team-slot" /><rect x="1015" y="748" width="140" height="20" class="team-slot" /><text x="1085" y="716" class="match-date">12 Julho - 22:00</text><text x="1085" y="788" class="match-info">EUA, Kansas City</text>
+    <path d="M 1190 637 H 1175 V 737 H 1160" class="line" />
+    <path d="M 1190 837 H 1175 V 737 H 1160" class="line" />
+
+    <rect x="830" y="500" width="150" height="75" class="match-box" /><rect x="835" y="524" width="140" height="20" class="team-slot" /><rect x="835" y="548" width="140" height="20" class="team-slot" /><text x="905" y="516" class="match-date">15 Julho - 16:00</text><text x="905" y="588" class="match-info">EUA, Atlanta</text>
+    <path d="M 1010 337 H 995 V 537 H 980" class="line" />
+    <path d="M 1010 737 H 995 V 537 H 980" class="line" />
+
+    <path d="M 770 537 H 790" class="line" />
+    <path d="M 830 537 H 810" class="line" />
+
+    <text x="800" y="370" class="final-title">Final</text>
+    <rect x="725" y="390" width="150" height="75" class="match-box" />
+    <rect x="730" y="414" width="140" height="20" class="team-slot" />
+    <rect x="730" y="438" width="140" height="20" class="team-slot" />
+    <text x="800" y="406" class="match-date">19 Julho - 16:00</text>
+    <text x="800" y="478" class="match-info">EUA, NY/New Jersey</text>
+    
+    <text x="800" y="640" class="match-info" style="font-weight:700;">3º lugar</text>
+    <rect x="725" y="650" width="150" height="75" class="match-box" />
+    <rect x="730" y="674" width="140" height="20" class="team-slot" />
+    <rect x="730" y="698" width="140" height="20" class="team-slot" />
+    <text x="800" y="666" class="match-date">18 Julho - 18:00</text>
+    <text x="800" y="738" class="match-info">EUA, Miami</text>
+</svg>
