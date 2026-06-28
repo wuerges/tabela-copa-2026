@@ -31,7 +31,6 @@ async fn load_page_data() -> Result<PageData, String> {
 #[component]
 pub fn BracketPage() -> impl IntoView {
     let data = LocalResource::new(|| load_page_data());
-
     view! {
         <div class="bracket-page">
             <Suspense fallback=|| view! { <p class="loading">Carregando dados...</p> }>
@@ -56,11 +55,8 @@ fn EditableApp(initial: PageData) -> impl IntoView {
         RwSignal::new(std::collections::HashSet::new());
 
     let group_standings = Signal::derive(move || {
-        let all: Vec<Match> = matches_by_group
-            .get()
-            .iter()
-            .flat_map(|(_, m)| m.clone())
-            .collect();
+        let all: Vec<Match> = matches_by_group.get().iter()
+            .flat_map(|(_, m)| m.clone()).collect();
         group_standings(&all)
     });
 
@@ -73,34 +69,24 @@ fn EditableApp(initial: PageData) -> impl IntoView {
     });
 
     let clinched = Signal::derive(move || {
-        let all: Vec<Match> = matches_by_group
-            .get()
-            .iter()
-            .flat_map(|(_, m)| m.clone())
-            .collect();
+        let all: Vec<Match> = matches_by_group.get().iter()
+            .flat_map(|(_, m)| m.clone()).collect();
         clinched_positions(&all)
     });
 
     let clinched_labels = Signal::derive(move || {
         let c = clinched.get();
-        let all: Vec<Match> = matches_by_group
-            .get()
-            .iter()
-            .flat_map(|(_, m)| m.clone())
-            .collect();
+        let all: Vec<Match> = matches_by_group.get().iter()
+            .flat_map(|(_, m)| m.clone()).collect();
         let mut labels: std::collections::HashSet<String> = std::collections::HashSet::new();
         for (code, positions) in &c {
             for m in &all {
                 if m.home_team.fifa_code == *code {
-                    for &pos in positions {
-                        labels.insert(format!("{}{}", pos, m.group.0));
-                    }
+                    for &pos in positions { labels.insert(format!("{}{}", pos, m.group.0)); }
                     break;
                 }
                 if m.away_team.fifa_code == *code {
-                    for &pos in positions {
-                        labels.insert(format!("{}{}", pos, m.group.0));
-                    }
+                    for &pos in positions { labels.insert(format!("{}{}", pos, m.group.0)); }
                     break;
                 }
             }
@@ -114,10 +100,7 @@ fn EditableApp(initial: PageData) -> impl IntoView {
         matches_by_group.update(|groups| {
             if let Some((_, matches)) = groups.iter_mut().find(|(c, _)| c.0 == group_code.0) {
                 if let Some(m) = matches.get_mut(match_idx) {
-                    m.result = Some(MatchResult {
-                        home_goals: h,
-                        away_goals: a,
-                    });
+                    m.result = Some(MatchResult { home_goals: h, away_goals: a });
                 }
             }
         });
@@ -127,17 +110,17 @@ fn EditableApp(initial: PageData) -> impl IntoView {
         knockout_results.update(|results| {
             results.insert(
                 format!("{round}-{match_number}"),
-                KnockoutResult {
-                    round: round.clone(),
-                    match_number,
-                    winner_is_home: is_home,
-                },
+                KnockoutResult { round: round.clone(), match_number, winner_is_home: is_home },
             );
         });
     });
 
     view! {
-        <BracketTree bracket=Signal::derive(move || bracket.get()) clinched_labels=Signal::derive(move || clinched_labels.get()) on_select=select_ko_winner/>
+        <BracketTree
+            bracket=Signal::derive(move || bracket.get())
+            clinched_labels=Signal::derive(move || clinched_labels.get())
+            on_select=select_ko_winner
+        />
         <h2>Fase de Grupos</h2>
         <div class="groups-container">
             {move || matches_by_group.get().iter().map(|(code, matches)| {
@@ -147,13 +130,8 @@ fn EditableApp(initial: PageData) -> impl IntoView {
                 let set_score = set_score.clone();
                 let edited = user_edited.get();
                 view! {
-                    <GroupCard
-                        group=code
-                        matches=matches
-                        group_standings=gs
-                        user_edited=edited
-                        on_set_score=set_score
-                    />
+                    <GroupCard group=code matches=matches group_standings=gs
+                        user_edited=edited on_set_score=set_score />
                 }
             }).collect::<Vec<_>>()}
         </div>
@@ -168,35 +146,26 @@ fn GroupCard(
     user_edited: std::collections::HashSet<String>,
     on_set_score: Callback<(GroupCode, usize, u32, u32), ()>,
 ) -> impl IntoView {
-    let standings = group_standings
-        .iter()
+    let standings = group_standings.iter()
         .find(|(c, _)| c.0 == group.0)
-        .map(|(_, s)| s.clone())
-        .unwrap_or_default();
+        .map(|(_, s)| s.clone()).unwrap_or_default();
 
     view! {
         <div class="group-card">
             <h3>{"Grupo "} {group.0.clone()}</h3>
             <table class="standings-table">
-                <thead>
-                    <tr>
-                        <th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th>
-                        <th>GP</th><th>GC</th><th>SG</th>
-                    </tr>
-                </thead>
+                <thead><tr>
+                    <th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th>
+                    <th>GP</th><th>GC</th><th>SG</th>
+                </tr></thead>
                 <tbody>
                     {standings.iter().map(|s| {
                         let class = if s.position <= 2 { "qualified" } else { "" };
                         view! {
                             <tr class=class>
-                                <td>{s.position}</td>
-                                <td>{s.team.name.clone()}</td>
-                                <td>{s.points}</td>
-                                <td>{s.played}</td>
-                                <td>{s.won}</td>
-                                <td>{s.drawn}</td>
-                                <td>{s.lost}</td>
-                                <td>{s.goals_for}</td>
+                                <td>{s.position}</td><td>{s.team.name.clone()}</td>
+                                <td>{s.points}</td><td>{s.played}</td><td>{s.won}</td>
+                                <td>{s.drawn}</td><td>{s.lost}</td><td>{s.goals_for}</td>
                                 <td>{s.goals_against}</td>
                                 <td>{if s.goal_diff == 0 { "0".to_string() } else { format!("{:+}", s.goal_diff) }}</td>
                             </tr>
@@ -213,8 +182,7 @@ fn GroupCard(
                         let away_goals = m.result.map(|r| r.away_goals).unwrap_or(0);
                         let match_id = format!("{}-{}", group.0, i + 1);
                         let is_editable = m.result.is_none() || user_edited.contains(&match_id);
-                        let gc1 = group.clone();
-                        let gc2 = group.clone();
+                        let gc1 = group.clone(); let gc2 = group.clone();
                         let cb = on_set_score.clone();
                         view! {
                             <tr>
@@ -227,21 +195,17 @@ fn GroupCard(
                                                 on:input=move |ev| {
                                                     let h: u32 = event_target_value(&ev).parse().unwrap_or(0);
                                                     cb.run((gc1.clone(), i, h, away_goals));
-                                                }
-                                            />
+                                                } />
                                             <span class="score-dash">-</span>
                                             <input type="number" class="score-input" min="0" max="99"
                                                 prop:value=away_goals
                                                 on:input=move |ev| {
                                                     let a: u32 = event_target_value(&ev).parse().unwrap_or(0);
                                                     on_set_score.run((gc2.clone(), i, home_goals, a));
-                                                }
-                                            />
+                                                } />
                                         }.into_any()
                                     } else {
-                                        view! {
-                                            <span class="score">{format!("{} - {}", home_goals, away_goals)}</span>
-                                        }.into_any()
+                                        view! { <span class="score">{format!("{} - {}", home_goals, away_goals)}</span> }.into_any()
                                     }}
                                 </td>
                                 <td>{m.away_team.name.clone()}</td>
@@ -254,131 +218,277 @@ fn GroupCard(
     }
 }
 
-// ── Bracket tree rendering ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+// SVG Bracket Rendering
+// ══════════════════════════════════════════════════════════════════════
 
-/// Display order for R32 matches (top to bottom in the first column).
-/// Adjacent pairs feed into the same R16 match for a clean tree layout.
-const R32_ORDER: &[u32] = &[2, 5, 1, 3, 4, 6, 7, 8, 11, 12, 9, 10, 14, 16, 13, 15];
-const R16_ORDER: &[u32] = &[17, 18, 19, 20, 21, 22, 23, 24];
-const QF_ORDER: &[u32] = &[25, 26, 27, 28];
-const SF_ORDER: &[u32] = &[29, 30];
+const MATCH_W: f64 = 150.0;
+const MATCH_H: f64 = 75.0;
+const SLOT_H: f64 = 20.0;
+const SLOT_MARGIN: f64 = 5.0;
 
-const R32_LANES: usize = 16;
-const R16_LANES: usize = 8;
-const QF_LANES: usize = 4;
-const SF_LANES: usize = 2;
-
-fn match_y(lane: usize, total: usize) -> f64 {
-    if total <= 1 { return 50.0; }
-    (lane * 2 + 1) as f64 / (total * 2) as f64 * 100.0
+/// Returns (x, y) for a match box top-left corner, or None for center-only matches.
+fn match_position(match_num: u32) -> (f64, f64) {
+    match match_num {
+        // ── Left R32 (x=80) ──────────────────────────
+        2  => (80.0, 150.0),
+        5  => (80.0, 250.0),
+        1  => (80.0, 350.0),
+        3  => (80.0, 450.0),
+        11 => (80.0, 550.0),
+        12 => (80.0, 650.0),
+        9  => (80.0, 750.0),
+        10 => (80.0, 850.0),
+        // ── Left R16 (x=260) ─────────────────────────
+        17 => (260.0, 200.0),
+        18 => (260.0, 400.0),
+        21 => (260.0, 600.0),
+        22 => (260.0, 800.0),
+        // ── Left QF (x=440) ──────────────────────────
+        25 => (440.0, 300.0),
+        26 => (440.0, 700.0),
+        // ── Left SF (x=620) ──────────────────────────
+        29 => (620.0, 500.0),
+        // ── Right SF (x=830) ─────────────────────────
+        30 => (830.0, 500.0),
+        // ── Right QF (x=1010) ────────────────────────
+        27 => (1010.0, 300.0),
+        28 => (1010.0, 700.0),
+        // ── Right R16 (x=1190) ───────────────────────
+        19 => (1190.0, 200.0),
+        20 => (1190.0, 400.0),
+        23 => (1190.0, 600.0),
+        24 => (1190.0, 800.0),
+        // ── Right R32 (x=1370) ───────────────────────
+        4  => (1370.0, 150.0),
+        6  => (1370.0, 250.0),
+        7  => (1370.0, 350.0),
+        8  => (1370.0, 450.0),
+        14 => (1370.0, 550.0),
+        16 => (1370.0, 650.0),
+        13 => (1370.0, 750.0),
+        15 => (1370.0, 850.0),
+        // ── Center ────────────────────────────────────
+        32 => (725.0, 390.0), // Final
+        31 => (725.0, 650.0), // 3rd Place
+        _ => (0.0, 0.0),
+    }
 }
 
-fn make_lane_map(order: &[u32]) -> HashMap<u32, usize> {
-    order.iter().enumerate().map(|(i, &m)| (m, i)).collect()
+fn match_center(match_num: u32) -> (f64, f64) {
+    let (x, y) = match_position(match_num);
+    (x + MATCH_W / 2.0, y + MATCH_H / 2.0)
 }
 
-fn render_slot(
-    slot: &BracketSlot,
-    y_pct: f64,
-    is_r32: bool,
-    clinched_labels: &std::collections::HashSet<String>,
+/// Returns (date_str, venue_str) for each match.
+fn match_info(match_num: u32) -> (&'static str, &'static str) {
+    match match_num {
+        1  => ("28 Junho - 16:00", "EUA, Los Angeles"),
+        2  => ("29 Junho - 17:30", "EUA, Boston"),
+        3  => ("30 Junho - 22:00", "México, Guadalupe"),
+        4  => ("29 Junho - 14:00", "EUA, Houston"),
+        5  => ("30 Junho - 18:00", "EUA, NY/NJ"),
+        6  => ("30 Junho - 14:00", "EUA, Dallas"),
+        7  => ("1 Julho - 22:00", "México, C. México"),
+        8  => ("1 Julho - 13:00", "EUA, Atlanta"),
+        9  => ("2 Julho - 21:00", "EUA, Santa Clara"),
+        10 => ("1 Julho - 17:00", "EUA, Seattle"),
+        11 => ("3 Julho - 20:00", "Canadá, Toronto"),
+        12 => ("2 Julho - 16:00", "EUA, Los Angeles"),
+        13 => ("3 Julho - 00:00", "Canadá, Vancouver"),
+        14 => ("3 Julho - 19:00", "EUA, Miami"),
+        15 => ("4 Julho - 22:30", "EUA, Kansas City"),
+        16 => ("3 Julho - 15:00", "EUA, Dallas"),
+        17 => ("4 Julho - 18:00", "EUA, Philadelphia"),
+        18 => ("4 Julho - 14:00", "EUA, Houston"),
+        19 => ("5 Julho - 17:00", "EUA, NY/NJ"),
+        20 => ("6 Julho - 21:00", "México, C. México"),
+        21 => ("6 Julho - 16:00", "EUA, Dallas"),
+        22 => ("7 Julho - 21:00", "EUA, Seattle"),
+        23 => ("7 Julho - 13:00", "EUA, Atlanta"),
+        24 => ("7 Julho - 17:00", "Canadá, Vancouver"),
+        25 => ("9 Julho - 17:00", "EUA, Boston"),
+        26 => ("10 Julho - 16:00", "EUA, Los Angeles"),
+        27 => ("11 Julho - 18:00", "EUA, Miami"),
+        28 => ("12 Julho - 22:00", "EUA, Kansas City"),
+        29 => ("14 Julho - 16:00", "EUA, Dallas"),
+        30 => ("15 Julho - 16:00", "EUA, Atlanta"),
+        31 => ("18 Julho - 18:00", "EUA, Miami"),
+        32 => ("19 Julho - 16:00", "EUA, NY/New Jersey"),
+        _ => ("", ""),
+    }
+}
+
+/// Generate connector line paths for the bracket tree.
+fn connector_paths() -> Vec<String> {
+    let mut paths = Vec::new();
+
+    // Helper: connect two source matches to one target match (all left or all right)
+    let mut pair_to_target = |m_a: u32, m_b: u32, m_tgt: u32| {
+        let (sx, _) = match_position(m_a); // source x
+        let (tx, _) = match_position(m_tgt); // target x
+        let from_x = sx + MATCH_W;
+        let to_x = tx;
+        let mid_x = (from_x + to_x) / 2.0;
+        let tgt_cy = match_center(m_tgt).1;
+
+        for &m in &[m_a, m_b] {
+            let (_, cy) = match_center(m);
+            paths.push(format!(
+                "M {} {} H {} V {} H {}",
+                from_x, cy, mid_x, tgt_cy, to_x
+            ));
+        }
+    };
+
+    // Left side R32 → R16
+    pair_to_target(2, 5, 17);
+    pair_to_target(1, 3, 18);
+    pair_to_target(11, 12, 21);
+    pair_to_target(9, 10, 22);
+
+    // Left side R16 → QF
+    pair_to_target(17, 18, 25);
+    pair_to_target(21, 22, 26);
+
+    // Left side QF → SF
+    pair_to_target(25, 26, 29);
+
+    // Right side R32 → R16
+    pair_to_target(4, 6, 19);
+    pair_to_target(7, 8, 20);
+    pair_to_target(14, 16, 23);
+    pair_to_target(13, 15, 24);
+
+    // Right side R16 → QF
+    pair_to_target(19, 20, 27);
+    pair_to_target(23, 24, 28);
+
+    // Right side QF → SF
+    pair_to_target(27, 28, 30);
+
+    // SF → Center (Final / 3rd Place)
+    let (sf29_x, _) = match_position(29);
+    let sf29_right = sf29_x + MATCH_W;
+    let sf29_cy = match_center(29).1;
+    paths.push(format!("M {} {} H 790", sf29_right, sf29_cy));
+
+    let (sf30_x, _) = match_position(30);
+    let sf30_cy = match_center(30).1;
+    paths.push(format!("M {} {} H 810", sf30_x, sf30_cy));
+
+    paths
+}
+
+fn team_display(slot: &BracketSlot, is_home: bool) -> (String, bool) {
+    let team = if is_home { &slot.home_team } else { &slot.away_team };
+    let label = if is_home { &slot.home_label } else { &slot.away_label };
+    let name = team.as_ref().map(|t| t.name.clone()).unwrap_or_else(|| label.clone());
+    let has_team = team.is_some();
+    (name, has_team)
+}
+
+/// Render one match box as SVG elements.
+fn svg_match(
+    slot: BracketSlot,
+    clinched_labels: std::collections::HashSet<String>,
     on_select: Callback<(String, u32, bool), ()>,
 ) -> impl IntoView {
-    let home_name = slot.home_team.as_ref()
-        .map(|t| t.name.clone())
-        .unwrap_or_else(|| slot.home_label.clone());
-    let away_name = slot.away_team.as_ref()
-        .map(|t| t.name.clone())
-        .unwrap_or_else(|| slot.away_label.clone());
+    let (x, y) = match_position(slot.match_number);
+    let cx = x + MATCH_W / 2.0;
+    let (date, _venue) = match_info(slot.match_number);
 
     let has_result = slot.home_result.is_some() && slot.away_result.is_some();
-    let home_clickable = slot.home_team.is_some();
-    let away_clickable = slot.away_team.is_some();
+    let is_empty = slot.home_team.is_none() && slot.away_team.is_none();
     let home_wins = has_result && slot.home_result.unwrap() > slot.away_result.unwrap();
     let away_wins = has_result && slot.away_result.unwrap() > slot.home_result.unwrap();
-    let is_empty = slot.home_team.is_none() && slot.away_team.is_none();
 
-    let extra_class = if has_result {
-        "match-node finished"
-    } else if is_empty {
-        "match-node pending"
-    } else {
-        "match-node determined"
-    };
+    let (home_name, home_has_team) = team_display(&slot, true);
+    let (away_name, away_has_team) = team_display(&slot, false);
 
-    let home_clinched = is_r32 && slot.home_team.is_some() && clinched_labels.contains(&slot.home_label);
-    let away_clinched = is_r32 && slot.away_team.is_some() && clinched_labels.contains(&slot.away_label);
-    let home_uncertain = is_r32 && slot.home_team.is_some()
-        && !clinched_labels.contains(&slot.home_label)
+    let is_r32 = slot.round == "Round of 32";
+    let home_clinched = is_r32 && home_has_team && clinched_labels.contains(&slot.home_label);
+    let away_clinched = is_r32 && away_has_team && clinched_labels.contains(&slot.away_label);
+    let home_uncertain = is_r32 && home_has_team && !clinched_labels.contains(&slot.home_label)
         && !slot.home_label.starts_with('W') && !slot.home_label.starts_with('L');
-    let away_uncertain = is_r32 && slot.away_team.is_some()
-        && !clinched_labels.contains(&slot.away_label)
+    let away_uncertain = is_r32 && away_has_team && !clinched_labels.contains(&slot.away_label)
         && !slot.away_label.starts_with('W') && !slot.away_label.starts_with('L');
 
-    let home_class = if home_wins {
-        "team home-team winner"
-    } else if home_clinched {
-        "team home-team clinched"
-    } else if home_uncertain {
-        "team home-team uncertain"
+    // Match box styling
+    let (box_fill, box_stroke, box_opacity) = if has_result {
+        ("#052e16", "#166534", "1")
+    } else if is_empty {
+        ("#111827", "#1e293b", "0.35")
     } else {
-        "team home-team"
+        ("#0c1929", "#1e40af", "1")
     };
-    let away_class = if away_wins {
-        "team away-team winner"
-    } else if away_clinched {
-        "team away-team clinched"
-    } else if away_uncertain {
-        "team away-team uncertain"
-    } else {
-        "team away-team"
-    };
+
+    let home_color = if home_wins { "#4ade80" }
+        else if home_clinched { "#4ade80" }
+        else if home_uncertain { "#fbbf24" }
+        else if has_result && !home_wins { "#475569" }
+        else { "#cbd5e1" };
+    let away_color = if away_wins { "#4ade80" }
+        else if away_clinched { "#4ade80" }
+        else if away_uncertain { "#fbbf24" }
+        else if has_result && !away_wins { "#475569" }
+        else { "#cbd5e1" };
+
+    let home_weight = if home_wins { "700" } else { "400" };
+    let away_weight = if away_wins { "700" } else { "400" };
+    let home_style = if home_uncertain { "font-style: italic" } else { "" };
+    let away_style = if away_uncertain { "font-style: italic" } else { "" };
+
+    let slot1_y = y + SLOT_MARGIN;
+    let slot2_y = slot1_y + SLOT_H;
+    let name1_y = slot1_y + SLOT_H / 2.0 + 1.0;
+    let name2_y = slot2_y + SLOT_H / 2.0 + 1.0;
+    let date_y = y - 2.0;
 
     let round_name = slot.round.clone();
     let match_num = slot.match_number;
+    let os = on_select.clone();
 
     view! {
-        <div class=extra_class style=format!("top: {y_pct:.2}%")>
-            <div class="match-teams">
-                {if home_clickable {
-                    let rn = round_name.clone();
-                    let cb = on_select.clone();
-                    let rn2 = rn.clone();
-                    let cb2 = cb.clone();
-                    view! {
-                        <span class=format!("{home_class} clickable") role="button" tabindex="0"
-                            on:click=move |_| cb.run((rn.clone(), match_num, true))
-                            on:keydown=move |ev| {
-                                if ev.key() == "Enter" || ev.key() == " " {
-                                    ev.prevent_default();
-                                    cb2.run((rn2.clone(), match_num, true));
-                                }
-                            }>{home_name}</span>
-                    }.into_any()
-                } else {
-                    view! { <span class=home_class>{home_name}</span> }.into_any()
-                }}
-                <span class="team-score">vs</span>
-                {if away_clickable {
-                    let rn = round_name.clone();
-                    let cb = on_select.clone();
-                    let rn2 = rn.clone();
-                    let cb2 = cb.clone();
-                    view! {
-                        <span class=format!("{away_class} clickable") role="button" tabindex="0"
-                            on:click=move |_| cb.run((rn.clone(), match_num, false))
-                            on:keydown=move |ev| {
-                                if ev.key() == "Enter" || ev.key() == " " {
-                                    ev.prevent_default();
-                                    cb2.run((rn2.clone(), match_num, false));
-                                }
-                            }>{away_name}</span>
-                    }.into_any()
-                } else {
-                    view! { <span class=away_class>{away_name}</span> }.into_any()
-                }}
-            </div>
-        </div>
+        <g>
+            <rect x=x y=y width=MATCH_W height=MATCH_H rx="6"
+                fill=box_fill stroke=box_stroke stroke-width="1.5" opacity=box_opacity />
+            <rect x=x+SLOT_MARGIN y=slot1_y width=MATCH_W-SLOT_MARGIN*2.0 height=SLOT_H rx="4"
+                fill="#0f172a" stroke="#334155" stroke-width="1" />
+            <rect x=x+SLOT_MARGIN y=slot2_y width=MATCH_W-SLOT_MARGIN*2.0 height=SLOT_H rx="4"
+                fill="#0f172a" stroke="#334155" stroke-width="1" />
+
+            {if home_has_team {
+                let rn = round_name.clone(); let c = os.clone();
+                view! {
+                    <text x=cx y=name1_y fill=home_color font-weight=home_weight font-size="11"
+                        text-anchor="middle" dominant-baseline="central"
+                        style=format!("cursor:pointer;{}", home_style)
+                        on:click=move |_| c.run((rn.clone(), match_num, true))>{home_name}</text>
+                }.into_any()
+            } else {
+                view! { <text x=cx y=name1_y fill=home_color font-size="11"
+                    text-anchor="middle" dominant-baseline="central"
+                    style=home_style>{home_name}</text> }.into_any()
+            }}
+
+            {if away_has_team {
+                let rn = round_name.clone();
+                view! {
+                    <text x=cx y=name2_y fill=away_color font-weight=away_weight font-size="11"
+                        text-anchor="middle" dominant-baseline="central"
+                        style=format!("cursor:pointer;{}", away_style)
+                        on:click=move |_| os.run((rn.clone(), match_num, false))>{away_name}</text>
+                }.into_any()
+            } else {
+                view! { <text x=cx y=name2_y fill=away_color font-size="11"
+                    text-anchor="middle" dominant-baseline="central"
+                    style=away_style>{away_name}</text> }.into_any()
+            }}
+
+            <text x=cx y=date_y fill="#38bdf8" font-size="8" font-weight="700"
+                text-anchor="middle" dominant-baseline="central">{date}</text>
+        </g>
     }.into_any()
 }
 
@@ -398,73 +508,58 @@ fn BracketTree(
                 <span class="legend-item"><span class="legend-dot determined"></span>Definido</span>
                 <span class="legend-item"><span class="legend-dot pending"></span>Pendente</span>
             </div>
-            <div class="bracket-tree">
-            {move || {
-                let b = bracket.get();
-                let labels = clinched_labels.get();
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000"
+                width="100%" height="100%" style="min-width: 900px; max-height: 650px;">
+                <rect width="1600" height="1000" fill="#0f172a" />
 
-                let r32: Vec<&BracketSlot> = b.rounds.first()
-                    .map(|r| r.iter().collect()).unwrap_or_default();
-                let r16: Vec<&BracketSlot> = b.rounds.get(1)
-                    .map(|r| r.iter().collect()).unwrap_or_default();
-                let qf: Vec<&BracketSlot> = b.rounds.get(2)
-                    .map(|r| r.iter().collect()).unwrap_or_default();
-                let sf: Vec<&BracketSlot> = b.rounds.get(3)
-                    .map(|r| r.iter().collect()).unwrap_or_default();
-                let last: Vec<&BracketSlot> = b.rounds.get(4).into_iter()
-                    .chain(b.rounds.get(5))
-                    .flat_map(|r| r.iter())
-                    .collect();
+                <text x="800" y="55" fill="#38bdf8" font-size="28" font-weight="800"
+                    text-anchor="middle" letter-spacing="2">COPA DO MUNDO 2026</text>
 
-                let r32_lm = make_lane_map(R32_ORDER);
-                let r16_lm = make_lane_map(R16_ORDER);
-                let qf_lm = make_lane_map(QF_ORDER);
-                let sf_lm = make_lane_map(SF_ORDER);
+                // Column headers
+                <text x="155" y="110" fill="#64748b" font-size="11" font-weight="700"
+                    text-anchor="middle">SEGUNDA FASE</text>
+                <text x="335" y="110" fill="#64748b" font-size="11" font-weight="700"
+                    text-anchor="middle">OITAVAS</text>
+                <text x="515" y="110" fill="#64748b" font-size="11" font-weight="700"
+                    text-anchor="middle">QUARTAS</text>
+                <text x="695" y="110" fill="#64748b" font-size="11" font-weight="700"
+                    text-anchor="middle">SEMIFINAL</text>
+                <text x="905" y="110" fill="#64748b" font-size="11" font-weight="700"
+                    text-anchor="middle">SEMIFINAL</text>
+                <text x="1085" y="110" fill="#64748b" font-size="11" font-weight="700"
+                    text-anchor="middle">QUARTAS</text>
+                <text x="1265" y="110" fill="#64748b" font-size="11" font-weight="700"
+                    text-anchor="middle">OITAVAS</text>
+                <text x="1445" y="110" fill="#64748b" font-size="11" font-weight="700"
+                    text-anchor="middle">SEGUNDA FASE</text>
 
-                let col = |slots: &[&BracketSlot],
-                           lm: &HashMap<u32, usize>,
-                           total: usize,
-                           title: &str,
-                           is_r32: bool,
-                           cb: Callback<(String, u32, bool), ()>| {
-                    let mut pos: Vec<(usize, &BracketSlot)> = slots.iter()
-                        .filter_map(|s| lm.get(&s.match_number).map(|&lane| (lane, *s)))
+                // Connector lines
+                {connector_paths().into_iter().map(|d| {
+                    view! { <path d=d fill="none" stroke="#475569" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" /> }
+                }).collect::<Vec<_>>()}
+
+                // Match boxes
+                {move || {
+                    let b = bracket.get();
+                    let labels = clinched_labels.get();
+                    let cb = on_select.clone();
+
+                    let all_slots: Vec<BracketSlot> = b.rounds.iter()
+                        .flat_map(|r| r.iter().cloned())
                         .collect();
-                    pos.sort_by_key(|(lane, _)| *lane);
-                    let nodes: Vec<_> = pos.iter().map(|(lane, s)| {
-                        render_slot(s, match_y(*lane, total), is_r32, &labels, cb.clone())
-                    }).collect();
-                    view! {
-                        <div class="bracket-round">
-                            <h3>{title.to_string()}</h3>
-                            <div class="bracket-matches">{nodes}</div>
-                        </div>
-                    }.into_any()
-                };
 
-                let cb = on_select.clone();
-                let final_slot = last.iter().find(|s| s.match_number == 32);
-                let third_slot = last.iter().find(|s| s.match_number == 31);
+                    all_slots.into_iter().map(|slot| {
+                        svg_match(slot, labels.clone(), cb.clone())
+                    }).collect::<Vec<_>>()
+                }}
 
-                view! {
-                    {col(&r32, &r32_lm, R32_LANES, "Segunda fase", true, cb.clone())}
-                    {col(&r16, &r16_lm, R16_LANES, "Oitavas", false, cb.clone())}
-                    {col(&qf, &qf_lm, QF_LANES, "Quartas", false, cb.clone())}
-                    {col(&sf, &sf_lm, SF_LANES, "Semifinal", false, cb.clone())}
-                    {
-                        view! {
-                            <div class="bracket-round">
-                                <h3>Final / 3º Lugar</h3>
-                                <div class="bracket-matches">
-                                    {final_slot.into_iter().map(|s| render_slot(s, 43.0, false, &labels, cb.clone())).collect::<Vec<_>>()}
-                                    {third_slot.into_iter().map(|s| render_slot(s, 68.0, false, &labels, cb.clone())).collect::<Vec<_>>()}
-                                </div>
-                            </div>
-                        }.into_any()
-                    }
-                }.into_any()
-            }}
-        </div>
+                // Final & 3rd labels
+                <text x="800" y="375" fill="#38bdf8" font-size="20" font-weight="800"
+                    text-anchor="middle">FINAL</text>
+                <text x="800" y="635" fill="#64748b" font-size="13" font-weight="700"
+                    text-anchor="middle">3º LUGAR</text>
+            </svg>
         </div>
     }
 }
