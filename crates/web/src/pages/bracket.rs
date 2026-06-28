@@ -505,9 +505,6 @@ fn BracketTree(
                 width="100%" style="min-width: 900px; display: block;">
                 <rect width="1600" height="1000" fill="#0f172a" />
 
-                <text x="800" y="55" fill="#38bdf8" font-size="28" font-weight="800"
-                    text-anchor="middle" letter-spacing="2">COPA DO MUNDO 2026</text>
-
                 // Column headers
                 <text x="155" y="110" fill="#64748b" font-size="11" font-weight="700"
                     text-anchor="middle">SEGUNDA FASE</text>
