@@ -501,7 +501,7 @@ fn BracketTree(
     view! {
         <h2>Mata-Mata</h2>
         <div class="bracket-section">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000"
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="30 85 1540 880"
                 width="100%" style="min-width: 900px; display: block;">
                 // Column headers
                 <text x="155" y="110" fill="#64748b" font-size="11" font-weight="700"
