@@ -501,15 +501,8 @@ fn BracketTree(
     view! {
         <div class="bracket-section">
             <h2>Mata-Mata</h2>
-            <div class="bracket-legend">
-                <span class="legend-item"><span class="legend-dot clinched"></span>Posição garantida</span>
-                <span class="legend-item"><span class="legend-dot uncertain"></span>Pode mudar</span>
-                <span class="legend-item"><span class="legend-dot finished"></span>Resultado</span>
-                <span class="legend-item"><span class="legend-dot determined"></span>Definido</span>
-                <span class="legend-item"><span class="legend-dot pending"></span>Pendente</span>
-            </div>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000"
-                width="100%" height="100%" style="min-width: 900px; max-height: 650px;">
+                width="100%" style="min-width: 900px; display: block;">
                 <rect width="1600" height="1000" fill="#0f172a" />
 
                 <text x="800" y="55" fill="#38bdf8" font-size="28" font-weight="800"
@@ -560,6 +553,13 @@ fn BracketTree(
                 <text x="800" y="635" fill="#64748b" font-size="13" font-weight="700"
                     text-anchor="middle">3º LUGAR</text>
             </svg>
+            <div class="bracket-legend">
+                <span class="legend-item"><span class="legend-dot clinched"></span>Posição garantida</span>
+                <span class="legend-item"><span class="legend-dot uncertain"></span>Pode mudar</span>
+                <span class="legend-item"><span class="legend-dot finished"></span>Resultado</span>
+                <span class="legend-item"><span class="legend-dot determined"></span>Definido</span>
+                <span class="legend-item"><span class="legend-dot pending"></span>Pendente</span>
+            </div>
         </div>
     }
 }
