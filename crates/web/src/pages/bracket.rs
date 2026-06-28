@@ -456,8 +456,8 @@ fn BracketTree(
                             <div class="bracket-round">
                                 <h3>Final / 3º Lugar</h3>
                                 <div class="bracket-matches">
-                                    {final_slot.into_iter().map(|s| render_slot(s, 27.0, false, &labels, cb.clone())).collect::<Vec<_>>()}
-                                    {third_slot.into_iter().map(|s| render_slot(s, 73.0, false, &labels, cb.clone())).collect::<Vec<_>>()}
+                                    {final_slot.into_iter().map(|s| render_slot(s, 43.0, false, &labels, cb.clone())).collect::<Vec<_>>()}
+                                    {third_slot.into_iter().map(|s| render_slot(s, 68.0, false, &labels, cb.clone())).collect::<Vec<_>>()}
                                 </div>
                             </div>
                         }.into_any()
