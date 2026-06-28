@@ -499,8 +499,8 @@ fn BracketTree(
     on_select: Callback<(String, u32, bool), ()>,
 ) -> impl IntoView {
     view! {
+        <h2>Mata-Mata</h2>
         <div class="bracket-section">
-            <h2>Mata-Mata</h2>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000"
                 width="100%" style="min-width: 900px; display: block;">
                 // Column headers
