@@ -1113,7 +1113,10 @@
         "name": "Portugal",
         "fifa_code": "POR"
       },
-      "result": null,
+      "result": {
+        "home_goals": 0,
+        "away_goals": 0
+      },
       "date": null
     },
     {
@@ -1127,7 +1130,10 @@
         "name": "Uzbekistan",
         "fifa_code": "UZB"
       },
-      "result": null,
+      "result": {
+        "home_goals": 3,
+        "away_goals": 1
+      },
       "date": null
     }
   ],
