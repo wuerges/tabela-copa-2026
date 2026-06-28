@@ -503,8 +503,6 @@ fn BracketTree(
             <h2>Mata-Mata</h2>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000"
                 width="100%" style="min-width: 900px; display: block;">
-                <rect width="1600" height="1000" fill="#0f172a" />
-
                 // Column headers
                 <text x="155" y="110" fill="#64748b" font-size="11" font-weight="700"
                     text-anchor="middle">SEGUNDA FASE</text>
