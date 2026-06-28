@@ -461,13 +461,13 @@ fn svg_match(
             {if home_has_team {
                 let rn = round_name.clone(); let c = os.clone();
                 view! {
-                    <text x=cx y=name1_y fill=home_color font-weight=home_weight font-size="11"
+                    <text x=cx y=name1_y fill=home_color font-weight=home_weight font-size="13"
                         text-anchor="middle" dominant-baseline="central"
                         style=format!("cursor:pointer;{}", home_style)
                         on:click=move |_| c.run((rn.clone(), match_num, true))>{home_name}</text>
                 }.into_any()
             } else {
-                view! { <text x=cx y=name1_y fill=home_color font-size="11"
+                view! { <text x=cx y=name1_y fill=home_color font-size="13"
                     text-anchor="middle" dominant-baseline="central"
                     style=home_style>{home_name}</text> }.into_any()
             }}
@@ -475,13 +475,13 @@ fn svg_match(
             {if away_has_team {
                 let rn = round_name.clone();
                 view! {
-                    <text x=cx y=name2_y fill=away_color font-weight=away_weight font-size="11"
+                    <text x=cx y=name2_y fill=away_color font-weight=away_weight font-size="13"
                         text-anchor="middle" dominant-baseline="central"
                         style=format!("cursor:pointer;{}", away_style)
                         on:click=move |_| os.run((rn.clone(), match_num, false))>{away_name}</text>
                 }.into_any()
             } else {
-                view! { <text x=cx y=name2_y fill=away_color font-size="11"
+                view! { <text x=cx y=name2_y fill=away_color font-size="13"
                     text-anchor="middle" dominant-baseline="central"
                     style=away_style>{away_name}</text> }.into_any()
             }}
