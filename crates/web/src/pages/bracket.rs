@@ -224,8 +224,9 @@ fn GroupCard(
 
 const MATCH_W: f64 = 150.0;
 const MATCH_H: f64 = 75.0;
-const SLOT_H: f64 = 20.0;
-const SLOT_MARGIN: f64 = 5.0;
+const SLOT_H: f64 = 28.0;
+const SLOT_TOP: f64 = 8.0;
+const SLOT_GAP: f64 = 3.0;
 
 /// Returns (x, y) for a match box top-left corner, or None for center-only matches.
 fn match_position(match_num: u32) -> (f64, f64) {
@@ -439,8 +440,8 @@ fn svg_match(
     let home_style = if home_uncertain { "font-style: italic" } else { "" };
     let away_style = if away_uncertain { "font-style: italic" } else { "" };
 
-    let slot1_y = y + SLOT_MARGIN;
-    let slot2_y = slot1_y + SLOT_H;
+    let slot1_y = y + SLOT_TOP;
+    let slot2_y = slot1_y + SLOT_H + SLOT_GAP;
     let name1_y = slot1_y + SLOT_H / 2.0 + 1.0;
     let name2_y = slot2_y + SLOT_H / 2.0 + 1.0;
     let date_y = y - 2.0;
@@ -453,9 +454,9 @@ fn svg_match(
         <g>
             <rect x=x y=y width=MATCH_W height=MATCH_H rx="6"
                 fill=box_fill stroke=box_stroke stroke-width="1.5" opacity=box_opacity />
-            <rect x=x+SLOT_MARGIN y=slot1_y width=MATCH_W-SLOT_MARGIN*2.0 height=SLOT_H rx="4"
+            <rect x=x+5.0 y=slot1_y width=MATCH_W-10.0 height=SLOT_H rx="4"
                 fill="#0f172a" stroke="#334155" stroke-width="1" />
-            <rect x=x+SLOT_MARGIN y=slot2_y width=MATCH_W-SLOT_MARGIN*2.0 height=SLOT_H rx="4"
+            <rect x=x+5.0 y=slot2_y width=MATCH_W-10.0 height=SLOT_H rx="4"
                 fill="#0f172a" stroke="#334155" stroke-width="1" />
 
             {if home_has_team {
