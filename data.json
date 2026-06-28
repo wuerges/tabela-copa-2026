@@ -1015,7 +1015,10 @@
         "name": "Austria",
         "fifa_code": "AUT"
       },
-      "result": null,
+      "result": {
+        "home_goals": 3,
+        "away_goals": 3
+      },
       "date": null
     },
     {
@@ -1029,7 +1032,10 @@
         "name": "Argentina",
         "fifa_code": "ARG"
       },
-      "result": null,
+      "result": {
+        "home_goals": 1,
+        "away_goals": 3
+      },
       "date": null
     }
   ],
