@@ -444,7 +444,7 @@ fn svg_match(
     let slot2_y = slot1_y + SLOT_H + SLOT_GAP;
     let name1_y = slot1_y + SLOT_H / 2.0 + 1.0;
     let name2_y = slot2_y + SLOT_H / 2.0 + 1.0;
-    let date_y = y - 2.0;
+    let date_y = y - 5.0;
 
     let round_name = slot.round.clone();
     let match_num = slot.match_number;
@@ -487,7 +487,7 @@ fn svg_match(
                     style=away_style>{away_name}</text> }.into_any()
             }}
 
-            <text x=cx y=date_y fill="#38bdf8" font-size="8" font-weight="700"
+            <text x=cx y=date_y fill="#38bdf8" font-size="10" font-weight="700"
                 text-anchor="middle" dominant-baseline="central">{date}</text>
         </g>
     }.into_any()
