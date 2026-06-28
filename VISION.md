@@ -26,9 +26,14 @@ Ferramenta CLI + Web App em Rust para acompanhar a Copa do Mundo FIFA 2026. Baix
 - Ranking separado dos **8 melhores 3º lugares**
 
 ### 3. Chave do mata-mata (`bracket` / Web)
-- Árvore completa (R32 → R16 → QF → SF → Final → 3º Lugar) com layout CSS Grid de 6 colunas equidistantes (`repeat(6, 1fr)`)
+- Árvore completa (R32 → R16 → QF → SF → Final → 3º Lugar) com layout de dois lados convergindo para o centro (Final e 3º Lugar)
+- **Layout visual**: duas metades (esquerda/direita) com 4 colunas cada (Segunda fase → Oitavas → Quartas → Semifinal), Final e 3º Lugar centralizados
 - Preenchimento automático dos confrontos com base nos resultados da fase de grupos
-- Formato oficial FIFA 2026: 1A/1B/1G/1H enfrentam os 4 melhores 3ºs (M1/M2/M7/M8), 5º-6º e 7º-8º melhores 3ºs se enfrentam entre si (M15/M16), demais confrontos seguem emparelhamento cruzado 1C↔2F, 1D↔2E, 1I↔2L, 1J↔2K, e runners-up 2A↔2B, 2G↔2H
+- **16 confrontos das oitavas de final** conforme formato oficial FIFA 2026:
+  - **8 vencedores de grupo** enfrentam **8 melhores 3º lugares** (M2: 1E↔3º-D, M5: 1I↔3º-F, M7: 1A↔3º-E, M8: 1L↔3º-K, M9: 1D↔3º-B, M10: 1G↔3º-I, M13: 1B↔3º-J, M15: 1K↔3º-L)
+  - **4 vencedores de grupo** enfrentam **vice-líderes** (M3: 1F↔2C, M4: 1C↔2F, M12: 1H↔2J, M14: 1J↔2H)
+  - **4 confrontos entre vice-líderes** (M1: 2A↔2B, M6: 2E↔2I, M11: 2K↔2L, M16: 2D↔2G)
+- **Tabela de combinação de 3º lugares**: cada vaga de 3º lugar aceita um conjunto específico de grupos (ex: M2 aceita A/B/C/D/F). Algoritmo de backtracking atribui os 8 grupos classificados às 8 vagas conforme a tabela oficial da FIFA.
 - **Propagação round-by-round**: selecionar vencedores em qualquer fase propaga o time para todas as fases seguintes (inclusive Final e 3º Lugar simultaneamente)
 - **Distinção visual** no R32: times com posição garantida (verde) vs. incertos que podem mudar (amarelo itálico), via `clinched_positions()`
 - **Três estados por nó**: finished (placar definido, borda verde), determined (times definidos sem placar, borda azul), pending (slot vazio, opaco)
@@ -86,7 +91,7 @@ Ferramenta CLI + Web App em Rust para acompanhar a Copa do Mundo FIFA 2026. Baix
 - **Roteamento:** `leptos_router`
 - **Requisições HTTP:** `gloo-net` (fetch API do navegador)
 - **Build tool:** `trunk` (compilação para WebAssembly, hook `pre_build` no `Trunk.toml` para copiar `data.json` e `style.css`)
-- **CSS:** `static/style.css` — tema dark, CSS Grid para layout do mata-mata, responsivo
+- **CSS:** `static/style.css` — tema dark, layout de dois lados para o mata-mata (metades esquerda/direita convergindo ao centro), responsivo
 - **Deploy:** Vercel (via `vercel.json`, build com trunk, output estático em `crates/web/dist/`)
 
 ## Estrutura do Projeto

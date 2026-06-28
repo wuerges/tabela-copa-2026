@@ -254,14 +254,140 @@ fn GroupCard(
     }
 }
 
-/// Bracket tree lanes for a 16→8→4→2→1→1 tournament
-const BRACKET_LANES: usize = 16;
+/// Lane order (top to bottom) for left-half R32 matches.
+const LEFT_R32_ORDER: &[u32] = &[2, 5, 1, 3, 11, 12, 9, 10];
+/// Lane order for left-half R16 matches.
+const LEFT_R16_ORDER: &[u32] = &[17, 18, 21, 22];
+/// Lane order for left-half QF matches.
+const LEFT_QF_ORDER: &[u32] = &[25, 26];
 
-fn match_y_pct(round_idx: usize, match_i: usize) -> f64 {
-    // R32=0(R1), R16=1(R2), QF=2(R4), SF=3(R8), Final=4(R16), 3rd=5(R16)
-    let step = 1u32 << round_idx.min(4);
-    let center = match_i as u32 * step * 2 + step;
-    (center as f64 / (BRACKET_LANES * 2) as f64) * 100.0
+/// Lane order (top to bottom) for right-half R32 matches.
+const RIGHT_R32_ORDER: &[u32] = &[4, 6, 7, 8, 14, 16, 13, 15];
+/// Lane order for right-half R16 matches.
+const RIGHT_R16_ORDER: &[u32] = &[19, 20, 23, 24];
+/// Lane order for right-half QF matches.
+const RIGHT_QF_ORDER: &[u32] = &[27, 28];
+
+fn match_y_pct_half(lane: usize, total_lanes: usize) -> f64 {
+    if total_lanes <= 1 {
+        return 50.0;
+    }
+    (lane * 2 + 1) as f64 / (total_lanes * 2) as f64 * 100.0
+}
+
+/// Build a lookup: match_number → lane index (0-based, top to bottom)
+fn build_lane_map(order: &[u32]) -> HashMap<u32, usize> {
+    order.iter().enumerate().map(|(i, &m)| (m, i)).collect()
+}
+
+/// Render a single match node for the bracket tree.
+fn render_match_node(
+    slot: &BracketSlot,
+    y_pct: f64,
+    is_r32: bool,
+    clinched_labels: &std::collections::HashSet<String>,
+    on_select: Callback<(String, u32, bool), ()>,
+) -> impl IntoView {
+    let home_name = slot.home_team.as_ref()
+        .map(|t| t.name.clone())
+        .unwrap_or_else(|| slot.home_label.clone());
+    let away_name = slot.away_team.as_ref()
+        .map(|t| t.name.clone())
+        .unwrap_or_else(|| slot.away_label.clone());
+
+    let has_result = slot.home_result.is_some() && slot.away_result.is_some();
+    let home_clickable = slot.home_team.is_some();
+    let away_clickable = slot.away_team.is_some();
+    let home_wins = has_result && slot.home_result.unwrap() > slot.away_result.unwrap();
+    let away_wins = has_result && slot.away_result.unwrap() > slot.home_result.unwrap();
+
+    let is_empty = slot.home_team.is_none() && slot.away_team.is_none();
+    let extra_class = if has_result {
+        "match-node finished"
+    } else if is_empty {
+        "match-node pending"
+    } else {
+        "match-node determined"
+    };
+
+    let home_clinched = is_r32 && slot.home_team.is_some() && clinched_labels.contains(&slot.home_label);
+    let away_clinched = is_r32 && slot.away_team.is_some() && clinched_labels.contains(&slot.away_label);
+    let home_uncertain = is_r32 && slot.home_team.is_some()
+        && !clinched_labels.contains(&slot.home_label)
+        && !slot.home_label.starts_with('W')
+        && !slot.home_label.starts_with('L');
+    let away_uncertain = is_r32 && slot.away_team.is_some()
+        && !clinched_labels.contains(&slot.away_label)
+        && !slot.away_label.starts_with('W')
+        && !slot.away_label.starts_with('L');
+
+    let home_class = if home_wins {
+        "team home-team winner"
+    } else if home_clinched {
+        "team home-team clinched"
+    } else if home_uncertain {
+        "team home-team uncertain"
+    } else {
+        "team home-team"
+    };
+    let away_class = if away_wins {
+        "team away-team winner"
+    } else if away_clinched {
+        "team away-team clinched"
+    } else if away_uncertain {
+        "team away-team uncertain"
+    } else {
+        "team away-team"
+    };
+
+    let round_name = slot.round.clone();
+    let match_num = slot.match_number;
+
+    view! {
+        <div class=extra_class style=format!("top: {y_pct:.2}%")>
+            <div class="match-teams">
+                {if home_clickable {
+                    let cb = on_select.clone();
+                    let rn = round_name.clone();
+                    let cb2 = cb.clone();
+                    let rn2 = rn.clone();
+                    view! {
+                        <span class=format!("{home_class} clickable")
+                            role="button" tabindex="0"
+                            on:click=move |_| cb.run((rn.clone(), match_num, true))
+                            on:keydown=move |ev| {
+                                if ev.key() == "Enter" || ev.key() == " " {
+                                    ev.prevent_default();
+                                    cb2.run((rn2.clone(), match_num, true));
+                                }
+                            }>{home_name}</span>
+                    }.into_any()
+                } else {
+                    view! { <span class=home_class>{home_name}</span> }.into_any()
+                }}
+                <span class="team-score">vs</span>
+                {if away_clickable {
+                    let rn = round_name.clone();
+                    let os = on_select.clone();
+                    let rn2 = rn.clone();
+                    let os2 = os.clone();
+                    view! {
+                        <span class=format!("{away_class} clickable")
+                            role="button" tabindex="0"
+                            on:click=move |_| os.run((rn.clone(), match_num, false))
+                            on:keydown=move |ev| {
+                                if ev.key() == "Enter" || ev.key() == " " {
+                                    ev.prevent_default();
+                                    os2.run((rn2.clone(), match_num, false));
+                                }
+                            }>{away_name}</span>
+                    }.into_any()
+                } else {
+                    view! { <span class=away_class>{away_name}</span> }.into_any()
+                }}
+            </div>
+        </div>
+    }.into_any()
 }
 
 #[component]
@@ -274,7 +400,7 @@ fn BracketTree(
         <div class="bracket-section">
             <h2>Mata-Mata</h2>
             <div class="bracket-legend">
-                <span class="legend-item"><span class="legend-dot clinched"></span>Posicao garantida</span>
+                <span class="legend-item"><span class="legend-dot clinched"></span>Posição garantida</span>
                 <span class="legend-item"><span class="legend-dot uncertain"></span>Pode mudar</span>
                 <span class="legend-item"><span class="legend-dot finished"></span>Resultado</span>
                 <span class="legend-item"><span class="legend-dot determined"></span>Definido</span>
@@ -283,124 +409,206 @@ fn BracketTree(
             <div class="bracket-tree">
             {move || {
                 let b = bracket.get();
+                let labels = clinched_labels.get();
 
-                let mut round_views = Vec::new();
-                for (ri, round) in b.rounds.iter().enumerate() {
-                    if round.is_empty() { continue; }
-                    let round_name = round[0].round.clone();
-                    let mut slot_views = Vec::new();
+                // Collect rounds by name
+                let r32_slots: Vec<&BracketSlot> = b.rounds.first()
+                    .map(|r| r.iter().collect())
+                    .unwrap_or_default();
+                let r16_slots: Vec<&BracketSlot> = b.rounds.get(1)
+                    .map(|r| r.iter().collect())
+                    .unwrap_or_default();
+                let qf_slots: Vec<&BracketSlot> = b.rounds.get(2)
+                    .map(|r| r.iter().collect())
+                    .unwrap_or_default();
+                let sf_slots: Vec<&BracketSlot> = b.rounds.get(3)
+                    .map(|r| r.iter().collect())
+                    .unwrap_or_default();
+                let final_3rd: Vec<&BracketSlot> = b.rounds.get(4).into_iter()
+                    .chain(b.rounds.get(5))
+                    .flat_map(|r| r.iter())
+                    .collect();
 
-                    for (mi, slot) in round.iter().enumerate() {
-                        let y = match_y_pct(ri, mi);
-                        let home_name = slot.home_team.as_ref()
-                            .map(|t| t.name.clone())
-                            .unwrap_or_else(|| slot.home_label.clone());
-                        let away_name = slot.away_team.as_ref()
-                            .map(|t| t.name.clone())
-                            .unwrap_or_else(|| slot.away_label.clone());
+                let left_r32_lanes = build_lane_map(LEFT_R32_ORDER);
+                let left_r16_lanes = build_lane_map(LEFT_R16_ORDER);
+                let left_qf_lanes = build_lane_map(LEFT_QF_ORDER);
+                let right_r32_lanes = build_lane_map(RIGHT_R32_ORDER);
+                let right_r16_lanes = build_lane_map(RIGHT_R16_ORDER);
+                let right_qf_lanes = build_lane_map(RIGHT_QF_ORDER);
 
-                        let has_result = slot.home_result.is_some() && slot.away_result.is_some();
-                        let home_clickable = slot.home_team.is_some();
-                        let away_clickable = slot.away_team.is_some();
-                        let home_wins = has_result && slot.home_result.unwrap() > slot.away_result.unwrap();
-                        let away_wins = has_result && slot.away_result.unwrap() > slot.home_result.unwrap();
+                let on_select_rc = on_select.clone();
 
-                        let is_empty = slot.home_team.is_none() && slot.away_team.is_none();
-                        let extra_class = if has_result {
-                            "match-node finished"
-                        } else if is_empty {
-                            "match-node pending"
-                        } else {
-                            "match-node determined"
-                        };
+                // Helper to render a round column
+                let render_round = |slots: &[&BracketSlot],
+                                    lane_map: &HashMap<u32, usize>,
+                                    total_lanes: usize,
+                                    round_name: &str,
+                                    is_r32: bool,
+                                    on_sel: Callback<(String, u32, bool), ()>| {
+                    let mut positioned: Vec<(usize, &BracketSlot)> = slots.iter()
+                        .filter_map(|s| {
+                            lane_map.get(&s.match_number).map(|&lane| (lane, *s))
+                        })
+                        .collect();
+                    positioned.sort_by_key(|(lane, _)| *lane);
 
-                        let labels = clinched_labels.get();
-                        let home_clinched = ri == 0 && slot.home_team.is_some() && labels.contains(&slot.home_label);
-                        let away_clinched = ri == 0 && slot.away_team.is_some() && labels.contains(&slot.away_label);
-                        let home_uncertain = ri == 0 && slot.home_team.is_some() && !labels.contains(&slot.home_label) && !slot.home_label.starts_with('W') && !slot.home_label.starts_with('L');
-                        let away_uncertain = ri == 0 && slot.away_team.is_some() && !labels.contains(&slot.away_label) && !slot.away_label.starts_with('W') && !slot.away_label.starts_with('L');
+                    let slot_views: Vec<_> = positioned.iter().map(|(lane, slot)| {
+                        let y = match_y_pct_half(*lane, total_lanes);
+                        render_match_node(slot, y, is_r32, &labels, on_sel.clone())
+                    }).collect();
 
-                        let home_class = if home_wins {
-                            "team home-team winner"
-                        } else if home_clinched {
-                            "team home-team clinched"
-                        } else if home_uncertain {
-                            "team home-team uncertain"
-                        } else {
-                            "team home-team"
-                        };
-                        let away_class = if away_wins {
-                            "team away-team winner"
-                        } else if away_clinched {
-                            "team away-team clinched"
-                        } else if away_uncertain {
-                            "team away-team uncertain"
-                        } else {
-                            "team away-team"
-                        };
-
-                        let round_name_clone = round_name.clone();
-                        let match_num = slot.match_number;
-                        let on_select = on_select.clone();
-
-                        slot_views.push(view! {
-                            <div class=extra_class style=format!("top: {y:.2}%")>
-                                <div class="match-teams">
-                                    {if home_clickable {
-                                        let cb = on_select.clone();
-                                        let rn = round_name_clone.clone();
-                                        let cb2 = cb.clone();
-                                        let rn2 = rn.clone();
-                                        view! {
-                                            <span class=format!("{home_class} clickable")
-                                                role="button" tabindex="0"
-                                                on:click=move |_| cb.run((rn.clone(), match_num, true))
-                                                on:keydown=move |ev| {
-                                                    if ev.key() == "Enter" || ev.key() == " " {
-                                                        ev.prevent_default();
-                                                        cb2.run((rn2.clone(), match_num, true));
-                                                    }
-                                                }>{home_name}</span>
-                                        }.into_any()
-                                    } else {
-                                        view! { <span class=home_class>{home_name}</span> }.into_any()
-                                    }}
-                                    <span class="team-score">vs</span>
-                                    {if away_clickable {
-                                        let rn = round_name_clone.clone();
-                                        let os = on_select.clone();
-                                        let rn2 = rn.clone();
-                                        let os2 = os.clone();
-                                        view! {
-                                            <span class=format!("{away_class} clickable")
-                                                role="button" tabindex="0"
-                                                on:click=move |_| os.run((rn.clone(), match_num, false))
-                                                on:keydown=move |ev| {
-                                                    if ev.key() == "Enter" || ev.key() == " " {
-                                                        ev.prevent_default();
-                                                        os2.run((rn2.clone(), match_num, false));
-                                                    }
-                                                }>{away_name}</span>
-                                        }.into_any()
-                                    } else {
-                                        view! { <span class=away_class>{away_name}</span> }.into_any()
-                                    }}
-                                </div>
-                            </div>
-                        }.into_any());
-                    }
-
-                    round_views.push(view! {
-                        <div class="bracket-round" style=format!("grid-column: {}", ri + 1)>
-                            <h3>{round_name}</h3>
+                    view! {
+                        <div class="bracket-round">
+                            <h3>{round_name.to_string()}</h3>
                             <div class="bracket-matches">
                                 {slot_views}
                             </div>
                         </div>
-                    }.into_any());
-                }
+                    }.into_any()
+                };
 
-                view! { {round_views} }.into_any()
+                let os = on_select_rc.clone();
+                let left_half = view! {
+                    <div class="bracket-half left">
+                        {render_round(&r32_slots, &left_r32_lanes, 8, "Segunda fase", true, os.clone())}
+                        {render_round(&r16_slots, &left_r16_lanes, 4, "Oitavas", false, os.clone())}
+                        {render_round(&qf_slots, &left_qf_lanes, 2, "Quartas", false, os.clone())}
+                        {{
+                            let sf_left: Vec<&BracketSlot> = sf_slots.iter()
+                                .filter(|s| s.match_number == 29).copied().collect();
+                            view! {
+                                <div class="bracket-round">
+                                    <h3>Semifinal</h3>
+                                    <div class="bracket-matches">
+                                        {sf_left.iter().map(|slot| {
+                                            render_match_node(slot, 50.0, false, &labels, os.clone())
+                                        }).collect::<Vec<_>>()}
+                                    </div>
+                                </div>
+                            }.into_any()
+                        }}
+                    </div>
+                }.into_any();
+
+                let os2 = on_select_rc.clone();
+                let right_half = view! {
+                    <div class="bracket-half right">
+                        {{
+                            let sf_right: Vec<&BracketSlot> = sf_slots.iter()
+                                .filter(|s| s.match_number == 30).copied().collect();
+                            view! {
+                                <div class="bracket-round">
+                                    <h3>Semifinal</h3>
+                                    <div class="bracket-matches">
+                                        {sf_right.iter().map(|slot| {
+                                            render_match_node(slot, 50.0, false, &labels, os2.clone())
+                                        }).collect::<Vec<_>>()}
+                                    </div>
+                                </div>
+                            }.into_any()
+                        }}
+                        {render_round(&qf_slots, &right_qf_lanes, 2, "Quartas", false, os2.clone())}
+                        {render_round(&r16_slots, &right_r16_lanes, 4, "Oitavas", false, os2.clone())}
+                        {render_round(&r32_slots, &right_r32_lanes, 8, "Segunda fase", true, os2.clone())}
+                    </div>
+                }.into_any();
+
+                let os3 = on_select_rc.clone();
+                let center = view! {
+                    <div class="bracket-center">
+                        {{
+                            let final_slot = final_3rd.iter().find(|s| s.match_number == 32);
+                            let third_slot = final_3rd.iter().find(|s| s.match_number == 31);
+                            view! {
+                                {final_slot.map(|slot| {
+                                    let home_name = slot.home_team.as_ref().map(|t| t.name.clone())
+                                        .unwrap_or_else(|| slot.home_label.clone());
+                                    let away_name = slot.away_team.as_ref().map(|t| t.name.clone())
+                                        .unwrap_or_else(|| slot.away_label.clone());
+                                    let has_result = slot.home_result.is_some() && slot.away_result.is_some();
+                                    let home_wins = has_result && slot.home_result.unwrap() > slot.away_result.unwrap();
+                                    let away_wins = has_result && slot.away_result.unwrap() > slot.home_result.unwrap();
+                                    let home_clickable = slot.home_team.is_some();
+                                    let away_clickable = slot.away_team.is_some();
+                                    let rn = slot.round.clone();
+                                    let mn = slot.match_number;
+
+                                    view! {
+                                        <div class="bracket-center-label">Final</div>
+                                        <div class="bracket-center-match">
+                                            <div class="match-date">19 Julho - 16:00</div>
+                                            <div class="match-teams">
+                                                {if home_clickable {
+                                                    let cb = os3.clone(); let r = rn.clone();
+                                                    view! { <span class=format!("team home-team clickable{}", if home_wins {" winner"} else {""})
+                                                        role="button" tabindex="0"
+                                                        on:click=move |_| cb.run((r.clone(), mn, true))>{home_name}</span> }.into_any()
+                                                } else {
+                                                    view! { <span class=format!("team home-team{}", if home_wins {" winner"} else {""})>{home_name}</span> }.into_any()
+                                                }}
+                                                <span class="team-score">vs</span>
+                                                {if away_clickable {
+                                                    let cb = os3.clone(); let r = rn.clone();
+                                                    view! { <span class=format!("team away-team clickable{}", if away_wins {" winner"} else {""})
+                                                        role="button" tabindex="0"
+                                                        on:click=move |_| cb.run((r.clone(), mn, false))>{away_name}</span> }.into_any()
+                                                } else {
+                                                    view! { <span class=format!("team away-team{}", if away_wins {" winner"} else {""})>{away_name}</span> }.into_any()
+                                                }}
+                                            </div>
+                                        </div>
+                                    }.into_any()
+                                })}
+                                <div style="height: 1.5rem;"></div>
+                                {third_slot.map(|slot| {
+                                    let home_name = slot.home_team.as_ref().map(|t| t.name.clone())
+                                        .unwrap_or_else(|| slot.home_label.clone());
+                                    let away_name = slot.away_team.as_ref().map(|t| t.name.clone())
+                                        .unwrap_or_else(|| slot.away_label.clone());
+                                    let has_result = slot.home_result.is_some() && slot.away_result.is_some();
+                                    let home_wins = has_result && slot.home_result.unwrap() > slot.away_result.unwrap();
+                                    let away_wins = has_result && slot.away_result.unwrap() > slot.home_result.unwrap();
+                                    let home_clickable = slot.home_team.is_some();
+                                    let away_clickable = slot.away_team.is_some();
+                                    let rn = slot.round.clone();
+                                    let mn = slot.match_number;
+
+                                    view! {
+                                        <div class="bracket-center-label">3º Lugar</div>
+                                        <div class="bracket-center-match">
+                                            <div class="match-date">18 Julho - 18:00</div>
+                                            <div class="match-teams">
+                                                {if home_clickable {
+                                                    let cb = os3.clone(); let r = rn.clone();
+                                                    view! { <span class=format!("team home-team clickable{}", if home_wins {" winner"} else {""})
+                                                        role="button" tabindex="0"
+                                                        on:click=move |_| cb.run((r.clone(), mn, true))>{home_name}</span> }.into_any()
+                                                } else {
+                                                    view! { <span class=format!("team home-team{}", if home_wins {" winner"} else {""})>{home_name}</span> }.into_any()
+                                                }}
+                                                <span class="team-score">vs</span>
+                                                {if away_clickable {
+                                                    let cb = os3.clone(); let r = rn.clone();
+                                                    view! { <span class=format!("team away-team clickable{}", if away_wins {" winner"} else {""})
+                                                        role="button" tabindex="0"
+                                                        on:click=move |_| cb.run((r.clone(), mn, false))>{away_name}</span> }.into_any()
+                                                } else {
+                                                    view! { <span class=format!("team away-team{}", if away_wins {" winner"} else {""})>{away_name}</span> }.into_any()
+                                                }}
+                                            </div>
+                                        </div>
+                                    }.into_any()
+                                })}
+                            }.into_any()
+                        }}
+                    </div>
+                }.into_any();
+
+                view! {
+                    {left_half}
+                    {center}
+                    {right_half}
+                }.into_any()
             }}
         </div>
         </div>
