@@ -21,6 +21,11 @@ pub struct BracketSlot {
     /// which side won. `None` for matches decided in regulation time.
     #[serde(default)]
     pub winner_is_home: Option<bool>,
+    /// Whether this slot's home/away team came from a user pick (not official).
+    #[serde(default)]
+    pub home_user_propagated: bool,
+    #[serde(default)]
+    pub away_user_propagated: bool,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -228,6 +233,8 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
             home_pen: None,
             away_pen: None,
             winner_is_home: None,
+            home_user_propagated: false,
+            away_user_propagated: false,
         })
         .collect();
 
@@ -253,6 +260,8 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
             home_pen: None,
             away_pen: None,
             winner_is_home: None,
+            home_user_propagated: false,
+            away_user_propagated: false,
         })
         .collect();
 
@@ -274,6 +283,8 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
             home_pen: None,
             away_pen: None,
             winner_is_home: None,
+            home_user_propagated: false,
+            away_user_propagated: false,
         })
         .collect();
 
@@ -292,6 +303,8 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
             home_pen: None,
             away_pen: None,
             winner_is_home: None,
+            home_user_propagated: false,
+            away_user_propagated: false,
         },
         BracketSlot {
             round: "Semi-finals".into(),
@@ -305,6 +318,8 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
             home_pen: None,
             away_pen: None,
             winner_is_home: None,
+            home_user_propagated: false,
+            away_user_propagated: false,
         },
     ];
 
@@ -320,6 +335,8 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
         home_pen: None,
         away_pen: None,
         winner_is_home: None,
+        home_user_propagated: false,
+        away_user_propagated: false,
     }];
 
     let final_match = vec![BracketSlot {
@@ -334,6 +351,8 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
         home_pen: None,
         away_pen: None,
         winner_is_home: None,
+        home_user_propagated: false,
+        away_user_propagated: false,
     }];
 
     Bracket {
@@ -421,4 +440,52 @@ fn propagate_winners(bracket: &mut Bracket, from_round: usize) {
             }
         }
     }
+}
+
+/// Mark slots whose teams came from user picks (not official results).
+/// `user_picks` contains keys like "Round of 32-5" for matches the user
+/// manually selected a winner for. The flag cascades: if R32 was user-picked,
+/// the team propagated to R16 is also user-propagated, etc.
+pub fn compute_user_propagated(bracket: &mut Bracket, user_picks: &std::collections::HashSet<String>) {
+    // Build set of match numbers that were user-picked (key = "Round-5" → match 5)
+    let mut user_match_numbers: std::collections::HashSet<u32> = std::collections::HashSet::new();
+    for key in user_picks {
+        // Key format: "Round of 32-5" → extract "5"
+        if let Some(num_str) = key.rsplit('-').next() {
+            if let Ok(n) = num_str.parse::<u32>() {
+                user_match_numbers.insert(n);
+            }
+        }
+    }
+
+    for round_idx in 0..bracket.rounds.len() {
+        for slot in &mut bracket.rounds[round_idx] {
+            let home_src = extract_match_num(&slot.home_label);
+            let away_src = extract_match_num(&slot.away_label);
+
+            if home_src.map_or(false, |n| user_match_numbers.contains(&n)) {
+                slot.home_user_propagated = true;
+            }
+            if away_src.map_or(false, |n| user_match_numbers.contains(&n)) {
+                slot.away_user_propagated = true;
+            }
+
+            // Propagate: if either team is user-propagated and this slot has a
+            // result (user pick), mark this match number for downstream slots
+            if (slot.home_user_propagated || slot.away_user_propagated)
+                && slot.home_result.is_some()
+            {
+                user_match_numbers.insert(slot.match_number);
+            }
+        }
+    }
+}
+
+/// Extract match number from a label like "W17", "L29", or "1A".
+fn extract_match_num(label: &str) -> Option<u32> {
+    // "W17" → 17, "L29" → 29
+    if let Some(rest) = label.strip_prefix('W').or_else(|| label.strip_prefix('L')) {
+        return rest.parse().ok();
+    }
+    None
 }

@@ -181,11 +181,8 @@ tr.qualified td:nth-child(2) {
     flex-shrink: 0;
 }
 
-.legend-dot.clinched { background: #4ade80; }
-.legend-dot.uncertain { background: #fbbf24; }
-.legend-dot.finished { background: #4ade80; }
-.legend-dot.determined { background: #cbd5e1; }
 .legend-dot.pending { background: #64748b; }
+.legend-dot.finished { background: #4ade80; }
 
 .simulation-info {
     background: #1e293b;

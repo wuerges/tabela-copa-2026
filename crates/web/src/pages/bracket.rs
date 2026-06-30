@@ -53,8 +53,12 @@ fn EditableApp(initial: PageData) -> impl IntoView {
     let matches_by_group: RwSignal<Vec<(GroupCode, Vec<Match>)>> =
         RwSignal::new(initial.matches_by_group);
 
-    let knockout_results: RwSignal<HashMap<String, KnockoutMatch>> =
-        RwSignal::new(initial.knockout_matches);
+    // Official results loaded from data.json — immutable
+    let official_results: HashMap<String, KnockoutMatch> = initial.knockout_matches;
+
+    // User manual winner picks: key = "round-match_number", value = is_home
+    let user_picks: RwSignal<HashMap<String, bool>> =
+        RwSignal::new(HashMap::new());
 
     let user_edited: RwSignal<std::collections::HashSet<String>> =
         RwSignal::new(std::collections::HashSet::new());
@@ -69,34 +73,35 @@ fn EditableApp(initial: PageData) -> impl IntoView {
         generate_bracket(&group_standings.get())
     });
 
-    let bracket = Signal::derive(move || {
-        apply_knockout_results(&base_bracket.get(), &knockout_results.get())
-    });
-
-    let clinched = Signal::derive(move || {
-        let all: Vec<Match> = matches_by_group.get().iter()
-            .flat_map(|(_, m)| m.clone()).collect();
-        clinched_positions(&all)
-    });
-
-    let clinched_labels = Signal::derive(move || {
-        let c = clinched.get();
-        let all: Vec<Match> = matches_by_group.get().iter()
-            .flat_map(|(_, m)| m.clone()).collect();
-        let mut labels: std::collections::HashSet<String> = std::collections::HashSet::new();
-        for (code, positions) in &c {
-            for m in &all {
-                if m.home_team.fifa_code == *code {
-                    for &pos in positions { labels.insert(format!("{}{}", pos, m.group.0)); }
-                    break;
-                }
-                if m.away_team.fifa_code == *code {
-                    for &pos in positions { labels.insert(format!("{}{}", pos, m.group.0)); }
-                    break;
-                }
+    // Merge official + user picks for propagation (official takes priority)
+    let official_for_merge = official_results.clone();
+    let all_results = Signal::derive(move || {
+        let mut merged = official_for_merge.clone();
+        for (key, &is_home) in user_picks.get().iter() {
+            if !merged.contains_key(key) {
+                let parts: Vec<&str> = key.rsplitn(2, '-').collect();
+                let round = if parts.len() == 2 { parts[1] } else { "" };
+                let mn: u32 = parts[0].parse().unwrap_or(0);
+                merged.insert(key.clone(), KnockoutMatch {
+                    round: round.to_string(),
+                    match_number: mn,
+                    home_goals: Some(if is_home { 1 } else { 0 }),
+                    away_goals: Some(if is_home { 0 } else { 1 }),
+                    home_pen: None,
+                    away_pen: None,
+                    winner_is_home: None,
+                });
             }
         }
-        labels
+        merged
+    });
+
+    let bracket = Signal::derive(move || {
+        let mut b = apply_knockout_results(&base_bracket.get(), &all_results.get());
+        let picks: std::collections::HashSet<String> =
+            user_picks.get().keys().cloned().collect();
+        compute_user_propagated(&mut b, &picks);
+        b
     });
 
     let set_score = Callback::new(move |(group_code, match_idx, h, a): (GroupCode, usize, u32, u32)| {
@@ -112,26 +117,16 @@ fn EditableApp(initial: PageData) -> impl IntoView {
     });
 
     let select_ko_winner = Callback::new(move |(round, match_number, is_home): (String, u32, bool)| {
-        knockout_results.update(|results| {
-            results.insert(
-                format!("{round}-{match_number}"),
-                KnockoutMatch {
-                    round: round.clone(),
-                    match_number,
-                    home_goals: Some(if is_home { 1 } else { 0 }),
-                    away_goals: Some(if is_home { 0 } else { 1 }),
-                    home_pen: None,
-                    away_pen: None,
-                    winner_is_home: None,
-                },
-            );
+        user_picks.update(|picks| {
+            picks.insert(format!("{round}-{match_number}"), is_home);
         });
     });
 
     view! {
         <BracketTree
             bracket=Signal::derive(move || bracket.get())
-            clinched_labels=Signal::derive(move || clinched_labels.get())
+            official_results=official_results.clone()
+            user_picks=Signal::derive(move || user_picks.get())
             on_select=select_ko_winner
         />
         <h2>Fase de Grupos</h2>
@@ -405,7 +400,8 @@ fn team_display(slot: &BracketSlot, is_home: bool) -> (String, bool) {
 /// Render one match box as SVG elements.
 fn svg_match(
     slot: BracketSlot,
-    clinched_labels: std::collections::HashSet<String>,
+    has_official_result: bool,
+    user_picked: Option<bool>, // Some(true)=home picked, Some(false)=away picked
     on_select: Callback<(String, u32, bool), ()>,
 ) -> impl IntoView {
     let (x, y) = match_position(slot.match_number);
@@ -419,6 +415,10 @@ fn svg_match(
     let away_wins = has_result && (slot.away_result.unwrap() > slot.home_result.unwrap()
         || (slot.home_result == slot.away_result && slot.winner_is_home == Some(false)));
 
+    // User-picked winner (only from user clicks, not official results)
+    let home_user_win = user_picked == Some(true);
+    let away_user_win = user_picked == Some(false);
+
     let home_score = slot.home_result;
     let away_score = slot.away_result;
     let home_pen = slot.home_pen;
@@ -429,16 +429,12 @@ fn svg_match(
     let (home_name, home_has_team) = team_display(&slot, true);
     let (away_name, away_has_team) = team_display(&slot, false);
 
-    let is_r32 = slot.round == "Round of 32";
-    let home_clinched = is_r32 && home_has_team && clinched_labels.contains(&slot.home_label);
-    let away_clinched = is_r32 && away_has_team && clinched_labels.contains(&slot.away_label);
-    let home_uncertain = is_r32 && home_has_team && !clinched_labels.contains(&slot.home_label)
-        && !slot.home_label.starts_with('W') && !slot.home_label.starts_with('L');
-    let away_uncertain = is_r32 && away_has_team && !clinched_labels.contains(&slot.away_label)
-        && !slot.away_label.starts_with('W') && !slot.away_label.starts_with('L');
+    // Clickable only when team exists AND no official result
+    let home_clickable = home_has_team && !has_official_result;
+    let away_clickable = away_has_team && !has_official_result;
 
-    // Match box styling
-    let (box_fill, box_stroke, box_opacity) = if has_result {
+    // Match box: green only for official results
+    let (box_fill, box_stroke, box_opacity) = if has_official_result {
         ("#052e16", "#166534", "1")
     } else if is_empty {
         ("#111827", "#1e293b", "0.35")
@@ -446,21 +442,13 @@ fn svg_match(
         ("#0c1929", "#1e40af", "1")
     };
 
-    let home_color = if home_wins { "#4ade80" }
-        else if home_clinched { "#4ade80" }
-        else if home_uncertain { "#fbbf24" }
-        else if has_result && !home_wins { "#475569" }
-        else { "#cbd5e1" };
-    let away_color = if away_wins { "#4ade80" }
-        else if away_clinched { "#4ade80" }
-        else if away_uncertain { "#fbbf24" }
-        else if has_result && !away_wins { "#475569" }
-        else { "#cbd5e1" };
+    // Team color: green if team exists and official, gray if user-propagated or TBD
+    let home_color = if home_has_team && !slot.home_user_propagated { "#4ade80" } else { "#cbd5e1" };
+    let away_color = if away_has_team && !slot.away_user_propagated { "#4ade80" } else { "#cbd5e1" };
 
-    let home_weight = if home_wins { "700" } else { "400" };
-    let away_weight = if away_wins { "700" } else { "400" };
-    let home_style = if home_uncertain { "font-style: italic" } else { "" };
-    let away_style = if away_uncertain { "font-style: italic" } else { "" };
+    // Bold for official winners, user-picked winners, or penalty winners
+    let home_weight = if home_wins || home_user_win { "700" } else { "400" };
+    let away_weight = if away_wins || away_user_win { "700" } else { "400" };
 
     let slot1_y = y + SLOT_TOP;
     let slot2_y = slot1_y + SLOT_H + SLOT_GAP;
@@ -481,18 +469,17 @@ fn svg_match(
             <rect x=x+5.0 y=slot2_y width=MATCH_W-10.0 height=SLOT_H rx="4"
                 fill="#0f172a" stroke="#334155" stroke-width="1" />
 
-            {if home_has_team {
+            {if home_clickable {
                 let rn = round_name.clone(); let c = os.clone();
                 view! {
                     <text x=cx y=name1_y fill=home_color font-weight=home_weight font-size="13"
                         text-anchor="middle" dominant-baseline="central"
-                        style=format!("cursor:pointer;{}", home_style)
+                        style="cursor:pointer"
                         on:click=move |_| c.run((rn.clone(), match_num, true))>{home_name}</text>
                 }.into_any()
             } else {
-                view! { <text x=cx y=name1_y fill=home_color font-size="13"
-                    text-anchor="middle" dominant-baseline="central"
-                    style=home_style>{home_name}</text> }.into_any()
+                view! { <text x=cx y=name1_y fill=home_color font-weight=home_weight font-size="13"
+                    text-anchor="middle" dominant-baseline="central">{home_name}</text> }.into_any()
             }}
 
             {if has_result {
@@ -509,18 +496,17 @@ fn svg_match(
                 ().into_any()
             }}
 
-            {if away_has_team {
+            {if away_clickable {
                 let rn = round_name.clone();
                 view! {
                     <text x=cx y=name2_y fill=away_color font-weight=away_weight font-size="13"
                         text-anchor="middle" dominant-baseline="central"
-                        style=format!("cursor:pointer;{}", away_style)
+                        style="cursor:pointer"
                         on:click=move |_| os.run((rn.clone(), match_num, false))>{away_name}</text>
                 }.into_any()
             } else {
-                view! { <text x=cx y=name2_y fill=away_color font-size="13"
-                    text-anchor="middle" dominant-baseline="central"
-                    style=away_style>{away_name}</text> }.into_any()
+                view! { <text x=cx y=name2_y fill=away_color font-weight=away_weight font-size="13"
+                    text-anchor="middle" dominant-baseline="central">{away_name}</text> }.into_any()
             }}
 
             {if has_result {
@@ -546,7 +532,8 @@ fn svg_match(
 #[component]
 fn BracketTree(
     bracket: Signal<Bracket>,
-    clinched_labels: Signal<std::collections::HashSet<String>>,
+    official_results: HashMap<String, KnockoutMatch>,
+    user_picks: Signal<HashMap<String, bool>>,
     on_select: Callback<(String, u32, bool), ()>,
 ) -> impl IntoView {
     view! {
@@ -581,15 +568,19 @@ fn BracketTree(
                 // Match boxes
                 {move || {
                     let b = bracket.get();
-                    let labels = clinched_labels.get();
                     let cb = on_select.clone();
+                    let official = official_results.clone();
+                    let picks = user_picks.get();
 
                     let all_slots: Vec<BracketSlot> = b.rounds.iter()
                         .flat_map(|r| r.iter().cloned())
                         .collect();
 
                     all_slots.into_iter().map(|slot| {
-                        svg_match(slot, labels.clone(), cb.clone())
+                        let key = format!("{}-{}", slot.round, slot.match_number);
+                        let has_official = official.contains_key(&key);
+                        let user_picked = picks.get(&key).copied();
+                        svg_match(slot, has_official, user_picked, cb.clone())
                     }).collect::<Vec<_>>()
                 }}
 
@@ -600,11 +591,8 @@ fn BracketTree(
                     text-anchor="middle">3º LUGAR</text>
             </svg>
             <div class="bracket-legend">
-                <span class="legend-item"><span class="legend-dot clinched"></span>Posição garantida</span>
-                <span class="legend-item"><span class="legend-dot uncertain"></span>Pode mudar</span>
-                <span class="legend-item"><span class="legend-dot finished"></span>Resultado</span>
-                <span class="legend-item"><span class="legend-dot determined"></span>Definido</span>
                 <span class="legend-item"><span class="legend-dot pending"></span>Pendente</span>
+                <span class="legend-item"><span class="legend-dot finished"></span>Definido</span>
             </div>
         </div>
     }
