@@ -1277,6 +1277,12 @@
       "match_number": 4,
       "home_goals": 2,
       "away_goals": 1
+    },
+    {
+      "round": "Round of 32",
+      "match_number": 6,
+      "home_goals": 1,
+      "away_goals": 2
     }
   ]
 }
