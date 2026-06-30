@@ -1,0 +1,54 @@
+name: Update match results
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download openfootball raw files
+        run: |
+          mkdir -p .cache .cache/prev
+          curl -sL -o .cache/cup.txt \
+            "https://raw.githubusercontent.com/openfootball/worldcup/refs/heads/master/2026--usa/cup.txt"
+          curl -sL -o .cache/cup_finals.txt \
+            "https://raw.githubusercontent.com/openfootball/worldcup/refs/heads/master/2026--usa/cup_finals.txt"
+
+      - name: Check if data changed
+        id: changed
+        run: |
+          touch .cache/prev/cup.txt .cache/prev/cup_finals.txt
+          CUP_DIFF=0
+          FINALS_DIFF=0
+          diff -q .cache/cup.txt .cache/prev/cup.txt >/dev/null 2>&1 || CUP_DIFF=1
+          diff -q .cache/cup_finals.txt .cache/prev/cup_finals.txt >/dev/null 2>&1 || FINALS_DIFF=1
+          if [ "$CUP_DIFF" = "1" ] || [ "$FINALS_DIFF" = "1" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.changed.outputs.changed == 'true'
+
+      - name: Generate data.json from local files
+        if: steps.changed.outputs.changed == 'true'
+        run: |
+          cargo run --manifest-path crates/cli/Cargo.toml -- fetch \
+            --cup .cache/cup.txt --finals .cache/cup_finals.txt
+
+      - name: Save cache and commit
+        if: steps.changed.outputs.changed == 'true'
+        run: |
+          cp .cache/cup.txt .cache/prev/
+          cp .cache/cup_finals.txt .cache/prev/
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          git diff --cached --quiet || (git commit -m "chore: update match results" && git push)

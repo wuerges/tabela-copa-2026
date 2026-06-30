@@ -1,43 +1,49 @@
 use copa2026_core::*;
 use std::collections::BTreeMap;
+use std::path::Path;
 
 const URL: &str = "https://raw.githubusercontent.com/openfootball/worldcup/refs/heads/master/2026--usa/cup.txt";
 const FINALS_URL: &str = "https://raw.githubusercontent.com/openfootball/worldcup/refs/heads/master/2026--usa/cup_finals.txt";
 
-pub async fn fetch_data() -> Result<WorldCupData, String> {
+async fn fetch_text(url: &str) -> Result<String, String> {
     let client = reqwest::Client::new();
-
-    // Fetch group stage
     let resp = client
-        .get(URL)
+        .get(url)
         .send()
         .await
         .map_err(|e| format!("HTTP error: {}", e))?;
-
     if !resp.status().is_success() {
         return Err(format!("HTTP {}", resp.status()));
     }
+    resp.text().await.map_err(|e| format!("Read error: {}", e))
+}
 
-    let body = resp
-        .text()
-        .await
-        .map_err(|e| format!("Read error: {}", e))?;
+pub async fn fetch_data(
+    cup_path: Option<&Path>,
+    finals_path: Option<&Path>,
+) -> Result<WorldCupData, String> {
+    // Group stage: from local file or download
+    let cup_body = if let Some(p) = cup_path {
+        std::fs::read_to_string(p).map_err(|e| format!("read {}: {e}", p.display()))?
+    } else {
+        fetch_text(URL).await?
+    };
 
-    let groups = parse_football_txt(&body)?;
-
-    // Fetch knockout stage
-    let knockout = match client
-        .get(FINALS_URL)
-        .send()
-        .await
-    {
-        Ok(resp) if resp.status().is_success() => {
-            match resp.text().await {
-                Ok(body) => parse_knockout_txt(&body),
-                Err(_) => vec![],
-            }
+    // Knockout stage: from local file or download
+    let finals_body = if let Some(p) = finals_path {
+        std::fs::read_to_string(p).map_err(|e| format!("read {}: {e}", p.display()))?
+    } else {
+        match fetch_text(FINALS_URL).await {
+            Ok(body) => body,
+            Err(_) => String::new(),
         }
-        _ => vec![],
+    };
+
+    let groups = parse_football_txt(&cup_body)?;
+    let knockout = if finals_body.is_empty() {
+        vec![]
+    } else {
+        parse_knockout_txt(&finals_body)
     };
 
     Ok(WorldCupData { groups, knockout })

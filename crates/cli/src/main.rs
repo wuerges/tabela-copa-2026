@@ -19,7 +19,14 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Download match data from openfootball
-    Fetch,
+    Fetch {
+        /// Use local cup.txt instead of downloading
+        #[arg(long)]
+        cup: Option<PathBuf>,
+        /// Use local cup_finals.txt instead of downloading
+        #[arg(long)]
+        finals: Option<PathBuf>,
+    },
     /// Show group standings, optionally filtered by group
     Standings {
         #[arg(short, long)]
@@ -54,11 +61,14 @@ fn main() {
 
 fn run(cli: Cli, path: &std::path::Path) -> Result<(), String> {
     match cli.command {
-        Commands::Fetch => {
+        Commands::Fetch { cup, finals } => {
             let runtime = tokio::runtime::Runtime::new()
                 .map_err(|e| format!("Failed to create async runtime: {e}"))?;
             runtime.block_on(async {
-                let data = fetch::fetch_data().await?;
+                let data = fetch::fetch_data(
+                    cup.as_deref(),
+                    finals.as_deref(),
+                ).await?;
                 save_data(&data, &path.to_string_lossy())?;
                 let total: usize = data.groups.values().map(|v| v.len()).sum();
                 let ko_count = data.knockout.len();
