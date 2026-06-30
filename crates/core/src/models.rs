@@ -50,6 +50,14 @@ pub struct Match {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KnockoutMatch {
+    pub round: String,
+    pub match_number: u32,
+    pub home_goals: Option<u32>,
+    pub away_goals: Option<u32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Standing {
     pub position: u32,
     pub team: Team,

@@ -1,7 +1,6 @@
 use copa2026_core::*;
 use gloo_net::http::Request;
 use leptos::prelude::*;
-use std::collections::BTreeMap;
 
 async fn load_simulation() -> Result<ThirdPlaceSimulation, String> {
     let raw = Request::get("/data.json")
@@ -9,12 +8,12 @@ async fn load_simulation() -> Result<ThirdPlaceSimulation, String> {
         .await
         .map_err(|e| format!("fetch: {e}"))?;
 
-    let data: BTreeMap<String, Vec<Match>> = raw
+    let data: WorldCupData = raw
         .json()
         .await
         .map_err(|e| format!("json: {e}"))?;
 
-    let all_matches: Vec<Match> = data.values().flatten().cloned().collect();
+    let all_matches: Vec<Match> = data.groups.values().flatten().cloned().collect();
 
     // Yield to the event loop so the Suspense fallback renders before
     // the potentially-blocking simulation computation

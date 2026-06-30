@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 
 const URL: &str = "https://raw.githubusercontent.com/openfootball/worldcup/refs/heads/master/2026--usa/cup.txt";
 
-pub async fn fetch_data() -> Result<BTreeMap<String, Vec<Match>>, String> {
+pub async fn fetch_data() -> Result<WorldCupData, String> {
     let client = reqwest::Client::new();
     let resp = client
         .get(URL)
@@ -20,7 +20,10 @@ pub async fn fetch_data() -> Result<BTreeMap<String, Vec<Match>>, String> {
         .await
         .map_err(|e| format!("Read error: {}", e))?;
 
-    parse_football_txt(&body)
+    parse_football_txt(&body).map(|groups| WorldCupData {
+        groups,
+        knockout: vec![],
+    })
 }
 
 fn parse_football_txt(content: &str) -> Result<BTreeMap<String, Vec<Match>>, String> {

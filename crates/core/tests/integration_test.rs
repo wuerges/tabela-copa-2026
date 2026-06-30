@@ -277,14 +277,14 @@ fn test_knockout_full_bracket_to_final() {
     assert!(rounds[1].iter().all(|s| s.home_team.is_none() && s.away_team.is_none()),
         "R16 should be empty before any results");
 
-    let mut results: std::collections::HashMap<String, KnockoutResult> = std::collections::HashMap::new();
+    let mut results: std::collections::HashMap<String, KnockoutMatch> = std::collections::HashMap::new();
 
     for slot in &rounds[0] {
         let key = format!("{}-{}", slot.round, slot.match_number);
-        results.insert(key, KnockoutResult {
+        results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            winner_is_home: true,
+            home_goals: Some(1), away_goals: Some(0),
         });
     }
 
@@ -304,10 +304,10 @@ fn test_knockout_full_bracket_to_final() {
 
     for slot in &bracket_r32.rounds[1] {
         let key = format!("{}-{}", slot.round, slot.match_number);
-        results.insert(key, KnockoutResult {
+        results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            winner_is_home: true,
+            home_goals: Some(1), away_goals: Some(0),
         });
     }
 
@@ -326,10 +326,10 @@ fn test_knockout_full_bracket_to_final() {
 
     for slot in &bracket_r16.rounds[2] {
         let key = format!("{}-{}", slot.round, slot.match_number);
-        results.insert(key, KnockoutResult {
+        results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            winner_is_home: true,
+            home_goals: Some(1), away_goals: Some(0),
         });
     }
 
@@ -348,10 +348,10 @@ fn test_knockout_full_bracket_to_final() {
 
     for slot in &bracket_qf.rounds[3] {
         let key = format!("{}-{}", slot.round, slot.match_number);
-        results.insert(key, KnockoutResult {
+        results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            winner_is_home: true,
+            home_goals: Some(1), away_goals: Some(0),
         });
     }
 
@@ -371,10 +371,10 @@ fn test_knockout_full_bracket_to_final() {
     assert!(final_slot.away_team.is_some(), "Final away team should be filled after SF");
 
     let final_key = format!("{}-{}", final_slot.round, final_slot.match_number);
-    results.insert(final_key, KnockoutResult {
+    results.insert(final_key, KnockoutMatch {
         round: final_slot.round.clone(),
         match_number: final_slot.match_number,
-        winner_is_home: true,
+        home_goals: Some(1), away_goals: Some(0),
     });
 
     let bracket_final = apply_knockout_results(&base_bracket, &results);
@@ -383,10 +383,10 @@ fn test_knockout_full_bracket_to_final() {
     assert_eq!(f.away_result, Some(0));
 
     let third_key = format!("{}-{}", third_place_slot.round, third_place_slot.match_number);
-    results.insert(third_key, KnockoutResult {
+    results.insert(third_key, KnockoutMatch {
         round: third_place_slot.round.clone(),
         match_number: third_place_slot.match_number,
-        winner_is_home: false,
+        home_goals: Some(0), away_goals: Some(1),
     });
 
     let bracket_all = apply_knockout_results(&base_bracket, &results);
@@ -498,7 +498,7 @@ fn test_resolve_slot_invalid_labels() {
 fn test_apply_knockout_results_empty_map() {
     let gs = basic_standings_12();
     let bracket = generate_bracket(&gs);
-    let empty: std::collections::HashMap<String, KnockoutResult> = std::collections::HashMap::new();
+    let empty: std::collections::HashMap<String, KnockoutMatch> = std::collections::HashMap::new();
     let result = apply_knockout_results(&bracket, &empty);
     assert_eq!(result.rounds.len(), bracket.rounds.len());
     for (r1, r2) in bracket.rounds.iter().zip(result.rounds.iter()) {
@@ -510,14 +510,15 @@ fn test_apply_knockout_results_empty_map() {
 fn test_knockout_mixed_winners_propagate() {
     let gs = basic_standings_12();
     let bracket = generate_bracket(&gs);
-    let mut results: std::collections::HashMap<String, KnockoutResult> = std::collections::HashMap::new();
+    let mut results: std::collections::HashMap<String, KnockoutMatch> = std::collections::HashMap::new();
 
     for (i, slot) in bracket.rounds[0].iter().enumerate() {
         let key = format!("{}-{}", slot.round, slot.match_number);
-        results.insert(key, KnockoutResult {
+        results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            winner_is_home: i % 2 == 0,
+            home_goals: Some(if i % 2 == 0 { 1 } else { 0 }),
+            away_goals: Some(if i % 2 == 0 { 0 } else { 1 }),
         });
     }
 
@@ -611,4 +612,55 @@ fn test_head_to_head_tiebreaker() {
     // Alpha and Beta both have 9 pts, +3 GD, 4 GF — but Alpha beat Beta H2H
     assert_eq!(standings[0].team.name, "Alpha", "Alpha should be 1st via head-to-head");
     assert_eq!(standings[1].team.name, "Beta", "Beta should be 2nd");
+}
+
+#[test]
+fn test_world_cup_data_backward_compat() {
+    // Old format: no "knockout" key
+    let old_json = r#"{"A":[]}"#;
+    let data: WorldCupData = serde_json::from_str(old_json).unwrap();
+    assert_eq!(data.groups.len(), 1);
+    assert!(data.groups.contains_key("A"));
+    assert!(data.knockout.is_empty());
+}
+
+#[test]
+fn test_world_cup_data_round_trip() {
+    // New format: with knockout results
+    let data = WorldCupData {
+        groups: {
+            let mut m = std::collections::BTreeMap::new();
+            m.insert("A".into(), vec![]);
+            m
+        },
+        knockout: vec![KnockoutMatch {
+            round: "Final".into(),
+            match_number: 32,
+            home_goals: Some(3),
+            away_goals: Some(1),
+        }],
+    };
+    let json = serde_json::to_string(&data).unwrap();
+    let parsed: WorldCupData = serde_json::from_str(&json).unwrap();
+    assert_eq!(parsed.groups.len(), 1);
+    assert_eq!(parsed.knockout.len(), 1);
+    assert_eq!(parsed.knockout[0].round, "Final");
+    assert_eq!(parsed.knockout[0].match_number, 32);
+    assert_eq!(parsed.knockout[0].home_goals, Some(3));
+    assert_eq!(parsed.knockout[0].away_goals, Some(1));
+}
+
+#[test]
+fn test_world_cup_data_no_knockout_serializes_clean() {
+    // Empty knockout should not appear in JSON output
+    let data = WorldCupData {
+        groups: {
+            let mut m = std::collections::BTreeMap::new();
+            m.insert("A".into(), vec![]);
+            m
+        },
+        knockout: vec![],
+    };
+    let json = serde_json::to_string(&data).unwrap();
+    assert!(!json.contains("knockout"), "Empty knockout should be skipped: {}", json);
 }

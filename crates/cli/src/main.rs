@@ -38,7 +38,7 @@ enum Commands {
 }
 
 fn load(path: &std::path::Path) -> Result<Vec<Match>, String> {
-    load_data(&path.to_string_lossy()).map(|d| d.into_values().flatten().collect())
+    load_data(&path.to_string_lossy()).map(|d| d.groups.into_values().flatten().collect())
 }
 
 fn main() {
@@ -60,8 +60,8 @@ fn run(cli: Cli, path: &std::path::Path) -> Result<(), String> {
             runtime.block_on(async {
                 let data = fetch::fetch_data().await?;
                 save_data(&data, &path.to_string_lossy())?;
-                let total: usize = data.values().map(|v| v.len()).sum();
-                println!("Fetched {total} matches across {} groups.", data.len());
+                let total: usize = data.groups.values().map(|v| v.len()).sum();
+                println!("Fetched {total} matches across {} groups.", data.groups.len());
                 Ok(())
             })
         }

@@ -2,11 +2,12 @@ use copa2026_core::*;
 use gloo_net::http::Request;
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 
 #[derive(Clone, Serialize, Deserialize)]
 struct PageData {
     matches_by_group: Vec<(GroupCode, Vec<Match>)>,
+    knockout_matches: HashMap<String, KnockoutMatch>,
 }
 
 async fn load_page_data() -> Result<PageData, String> {
@@ -14,18 +15,22 @@ async fn load_page_data() -> Result<PageData, String> {
         .send()
         .await
         .map_err(|e| format!("fetch: {e}"))?;
-    let data: BTreeMap<String, Vec<Match>> = raw
+    let data: WorldCupData = raw
         .json()
         .await
         .map_err(|e| format!("json: {e}"))?;
     let matches_by_group: Vec<(GroupCode, Vec<Match>)> = GROUP_CODES
         .iter()
         .map(|code| {
-            let m = data.get(*code).cloned().unwrap_or_default();
+            let m = data.groups.get(*code).cloned().unwrap_or_default();
             (GroupCode(code.to_string()), m)
         })
         .collect();
-    Ok(PageData { matches_by_group })
+    let knockout_matches: HashMap<String, KnockoutMatch> = data.knockout
+        .into_iter()
+        .map(|m| (format!("{}-{}", m.round, m.match_number), m))
+        .collect();
+    Ok(PageData { matches_by_group, knockout_matches })
 }
 
 #[component]
@@ -48,8 +53,8 @@ fn EditableApp(initial: PageData) -> impl IntoView {
     let matches_by_group: RwSignal<Vec<(GroupCode, Vec<Match>)>> =
         RwSignal::new(initial.matches_by_group);
 
-    let knockout_results: RwSignal<HashMap<String, KnockoutResult>> =
-        RwSignal::new(HashMap::new());
+    let knockout_results: RwSignal<HashMap<String, KnockoutMatch>> =
+        RwSignal::new(initial.knockout_matches);
 
     let user_edited: RwSignal<std::collections::HashSet<String>> =
         RwSignal::new(std::collections::HashSet::new());
@@ -110,7 +115,12 @@ fn EditableApp(initial: PageData) -> impl IntoView {
         knockout_results.update(|results| {
             results.insert(
                 format!("{round}-{match_number}"),
-                KnockoutResult { round: round.clone(), match_number, winner_is_home: is_home },
+                KnockoutMatch {
+                    round: round.clone(),
+                    match_number,
+                    home_goals: Some(if is_home { 1 } else { 0 }),
+                    away_goals: Some(if is_home { 0 } else { 1 }),
+                },
             );
         });
     });

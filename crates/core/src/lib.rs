@@ -10,7 +10,13 @@ pub use standings::*;
 pub use bracket::*;
 pub use simulation::*;
 
-pub type WorldCupData = BTreeMap<String, Vec<Match>>;
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct WorldCupData {
+    #[serde(flatten)]
+    pub groups: BTreeMap<String, Vec<Match>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub knockout: Vec<KnockoutMatch>,
+}
 
 pub fn load_data(path: &str) -> Result<WorldCupData, String> {
     let content = std::fs::read_to_string(path).map_err(|e| format!("Failed to read {}: {}", path, e))?;

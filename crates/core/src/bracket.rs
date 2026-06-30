@@ -19,13 +19,6 @@ pub struct Bracket {
     pub rounds: Vec<Vec<BracketSlot>>,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct KnockoutResult {
-    pub round: String,
-    pub match_number: u32,
-    pub winner_is_home: bool,
-}
-
 /// Third-place combination table: each entry is (match_index, allowed_groups).
 /// Match indices are 0-based (M1=0, M2=1, ..., M16=15).
 /// The 8 matches that host a third-place team: M2, M5, M7, M8, M9, M10, M13, M15.
@@ -320,7 +313,7 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
 
 pub fn apply_knockout_results(
     base: &Bracket,
-    results: &HashMap<String, KnockoutResult>,
+    results: &HashMap<String, KnockoutMatch>,
 ) -> Bracket {
     let mut bracket = base.clone();
 
@@ -333,14 +326,11 @@ pub fn apply_knockout_results(
             }
 
             let key = format!("{}-{}", slot.round, slot.match_number);
-            if let Some(res) = results.get(&key) {
-                let slot = &mut bracket.rounds[round_idx][slot_idx];
-                if res.winner_is_home {
-                    slot.home_result = Some(1);
-                    slot.away_result = Some(0);
-                } else {
-                    slot.home_result = Some(0);
-                    slot.away_result = Some(1);
+            if let Some(ko) = results.get(&key) {
+                if let (Some(h), Some(a)) = (ko.home_goals, ko.away_goals) {
+                    let slot = &mut bracket.rounds[round_idx][slot_idx];
+                    slot.home_result = Some(h);
+                    slot.away_result = Some(a);
                 }
             }
         }
