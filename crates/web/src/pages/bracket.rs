@@ -120,6 +120,8 @@ fn EditableApp(initial: PageData) -> impl IntoView {
                     match_number,
                     home_goals: Some(if is_home { 1 } else { 0 }),
                     away_goals: Some(if is_home { 0 } else { 1 }),
+                    home_pen: None,
+                    away_pen: None,
                     winner_is_home: None,
                 },
             );
@@ -412,8 +414,17 @@ fn svg_match(
 
     let has_result = slot.home_result.is_some() && slot.away_result.is_some();
     let is_empty = slot.home_team.is_none() && slot.away_team.is_none();
-    let home_wins = has_result && slot.home_result.unwrap() > slot.away_result.unwrap();
-    let away_wins = has_result && slot.away_result.unwrap() > slot.home_result.unwrap();
+    let home_wins = has_result && (slot.home_result.unwrap() > slot.away_result.unwrap()
+        || (slot.home_result == slot.away_result && slot.winner_is_home == Some(true)));
+    let away_wins = has_result && (slot.away_result.unwrap() > slot.home_result.unwrap()
+        || (slot.home_result == slot.away_result && slot.winner_is_home == Some(false)));
+
+    let home_score = slot.home_result;
+    let away_score = slot.away_result;
+    let home_pen = slot.home_pen;
+    let away_pen = slot.away_pen;
+    let scores_equal = has_result && home_score == away_score;
+    let penalty_winner = slot.winner_is_home;
 
     let (home_name, home_has_team) = team_display(&slot, true);
     let (away_name, away_has_team) = team_display(&slot, false);
@@ -484,6 +495,20 @@ fn svg_match(
                     style=home_style>{home_name}</text> }.into_any()
             }}
 
+            {if has_result {
+                let score = if scores_equal && penalty_winner.is_some() {
+                    format!("{}+{}", home_score.unwrap(), home_pen.unwrap_or(0))
+                } else {
+                    home_score.unwrap().to_string()
+                };
+                view! {
+                    <text x=x + MATCH_W - 12.0 y=name1_y fill=home_color font-weight=home_weight font-size="13"
+                        text-anchor="end" dominant-baseline="central">{score}</text>
+                }.into_any()
+            } else {
+                ().into_any()
+            }}
+
             {if away_has_team {
                 let rn = round_name.clone();
                 view! {
@@ -496,6 +521,20 @@ fn svg_match(
                 view! { <text x=cx y=name2_y fill=away_color font-size="13"
                     text-anchor="middle" dominant-baseline="central"
                     style=away_style>{away_name}</text> }.into_any()
+            }}
+
+            {if has_result {
+                let score = if scores_equal && penalty_winner.is_some() {
+                    format!("{}+{}", away_score.unwrap(), away_pen.unwrap_or(0))
+                } else {
+                    away_score.unwrap().to_string()
+                };
+                view! {
+                    <text x=x + MATCH_W - 12.0 y=name2_y fill=away_color font-weight=away_weight font-size="13"
+                        text-anchor="end" dominant-baseline="central">{score}</text>
+                }.into_any()
+            } else {
+                ().into_any()
             }}
 
             <text x=cx y=date_y fill="#38bdf8" font-size="10" font-weight="700"

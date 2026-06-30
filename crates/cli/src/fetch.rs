@@ -365,16 +365,13 @@ fn parse_knockout_txt(content: &str) -> Vec<KnockoutMatch> {
                 };
 
                 // Check for penalty shootout
-                let winner_is_home = if let Some(pen_cap) = pen_re.captures(clean) {
+                let (home_pen, away_pen, winner_is_home) =
+                    if let Some(pen_cap) = pen_re.captures(clean) {
                     let ph: u32 = pen_cap.get(1).unwrap().as_str().parse().unwrap_or(0);
                     let pa: u32 = pen_cap.get(2).unwrap().as_str().parse().unwrap_or(0);
-                    if ph > pa {
-                        Some(true)
-                    } else {
-                        Some(false)
-                    }
+                    (Some(ph), Some(pa), Some(ph > pa))
                 } else {
-                    None
+                    (None, None, None)
                 };
 
                 results.push(KnockoutMatch {
@@ -382,6 +379,8 @@ fn parse_knockout_txt(content: &str) -> Vec<KnockoutMatch> {
                     match_number,
                     home_goals: Some(home_goals),
                     away_goals: Some(away_goals),
+                    home_pen,
+                    away_pen,
                     winner_is_home,
                 });
             }

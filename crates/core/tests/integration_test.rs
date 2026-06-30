@@ -284,7 +284,7 @@ fn test_knockout_full_bracket_to_final() {
         results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            home_goals: Some(1), away_goals: Some(0), winner_is_home: None,
+            home_goals: Some(1), away_goals: Some(0), home_pen: None, away_pen: None, winner_is_home: None,
         });
     }
 
@@ -307,7 +307,7 @@ fn test_knockout_full_bracket_to_final() {
         results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            home_goals: Some(1), away_goals: Some(0), winner_is_home: None,
+            home_goals: Some(1), away_goals: Some(0), home_pen: None, away_pen: None, winner_is_home: None,
         });
     }
 
@@ -329,7 +329,7 @@ fn test_knockout_full_bracket_to_final() {
         results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            home_goals: Some(1), away_goals: Some(0), winner_is_home: None,
+            home_goals: Some(1), away_goals: Some(0), home_pen: None, away_pen: None, winner_is_home: None,
         });
     }
 
@@ -351,7 +351,7 @@ fn test_knockout_full_bracket_to_final() {
         results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            home_goals: Some(1), away_goals: Some(0), winner_is_home: None,
+            home_goals: Some(1), away_goals: Some(0), home_pen: None, away_pen: None, winner_is_home: None,
         });
     }
 
@@ -374,7 +374,7 @@ fn test_knockout_full_bracket_to_final() {
     results.insert(final_key, KnockoutMatch {
         round: final_slot.round.clone(),
         match_number: final_slot.match_number,
-        home_goals: Some(1), away_goals: Some(0), winner_is_home: None,
+        home_goals: Some(1), away_goals: Some(0), home_pen: None, away_pen: None, winner_is_home: None,
     });
 
     let bracket_final = apply_knockout_results(&base_bracket, &results);
@@ -386,7 +386,7 @@ fn test_knockout_full_bracket_to_final() {
     results.insert(third_key, KnockoutMatch {
         round: third_place_slot.round.clone(),
         match_number: third_place_slot.match_number,
-        home_goals: Some(0), away_goals: Some(1), winner_is_home: None,
+        home_goals: Some(0), away_goals: Some(1), home_pen: None, away_pen: None, winner_is_home: None,
     });
 
     let bracket_all = apply_knockout_results(&base_bracket, &results);
@@ -519,7 +519,7 @@ fn test_knockout_mixed_winners_propagate() {
             match_number: slot.match_number,
             home_goals: Some(if i % 2 == 0 { 1 } else { 0 }),
             away_goals: Some(if i % 2 == 0 { 0 } else { 1 }),
-            winner_is_home: None,
+            home_pen: None, away_pen: None, winner_is_home: None,
         });
     }
 
@@ -639,7 +639,7 @@ fn test_world_cup_data_round_trip() {
             match_number: 32,
             home_goals: Some(3),
             away_goals: Some(1),
-            winner_is_home: None,
+            home_pen: None, away_pen: None, winner_is_home: None,
         }],
     };
     let json = serde_json::to_string(&data).unwrap();
@@ -665,4 +665,44 @@ fn test_world_cup_data_no_knockout_serializes_clean() {
     };
     let json = serde_json::to_string(&data).unwrap();
     assert!(!json.contains("knockout"), "Empty knockout should be skipped: {}", json);
+}
+
+#[test]
+fn test_penalty_match_preserves_regulation_score() {
+    let gs = basic_standings_12();
+    let bracket = generate_bracket(&gs);
+
+    // Simulate a penalty-decided R32 match: regulation 1-1, away wins on pens
+    let mut results: std::collections::HashMap<String, KnockoutMatch> = std::collections::HashMap::new();
+    let slot = &bracket.rounds[0][0];
+    results.insert(
+        format!("{}-{}", slot.round, slot.match_number),
+        KnockoutMatch {
+            round: slot.round.clone(),
+            match_number: slot.match_number,
+            home_goals: Some(1),
+            away_goals: Some(1),
+            home_pen: Some(3),
+            away_pen: Some(4),
+            winner_is_home: Some(false),
+        },
+    );
+
+    let updated = apply_knockout_results(&bracket, &results);
+
+    // Regulation score should be preserved, not replaced with 0-1
+    let slot = &updated.rounds[0][0];
+    assert_eq!(slot.home_result, Some(1), "Regulation home score should be 1");
+    assert_eq!(slot.away_result, Some(1), "Regulation away score should be 1");
+    assert_eq!(slot.home_pen, Some(3), "Home penalty score should be 3");
+    assert_eq!(slot.away_pen, Some(4), "Away penalty score should be 4");
+    assert_eq!(slot.winner_is_home, Some(false), "Away should be marked as penalty winner");
+
+    // Away should advance to R16
+    let r16 = &updated.rounds[1];
+    let away_team = &bracket.rounds[0][0].away_team;
+    let propagated = r16.iter().any(|s| {
+        s.home_team.as_ref() == away_team.as_ref() || s.away_team.as_ref() == away_team.as_ref()
+    });
+    assert!(propagated, "Penalty winner (away) should advance to next round");
 }

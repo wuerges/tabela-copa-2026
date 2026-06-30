@@ -12,6 +12,15 @@ pub struct BracketSlot {
     pub away_team: Option<Team>,
     pub home_result: Option<u32>,
     pub away_result: Option<u32>,
+    /// Penalty shootout scores (only set when match was decided by penalties).
+    #[serde(default)]
+    pub home_pen: Option<u32>,
+    #[serde(default)]
+    pub away_pen: Option<u32>,
+    /// When the match was a draw and decided by penalties, this indicates
+    /// which side won. `None` for matches decided in regulation time.
+    #[serde(default)]
+    pub winner_is_home: Option<bool>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -216,6 +225,9 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
             away_team: resolve_slot(away_label, &team_map),
             home_result: None,
             away_result: None,
+            home_pen: None,
+            away_pen: None,
+            winner_is_home: None,
         })
         .collect();
 
@@ -238,6 +250,9 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
             away_team: None,
             home_result: None,
             away_result: None,
+            home_pen: None,
+            away_pen: None,
+            winner_is_home: None,
         })
         .collect();
 
@@ -256,6 +271,9 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
             away_team: None,
             home_result: None,
             away_result: None,
+            home_pen: None,
+            away_pen: None,
+            winner_is_home: None,
         })
         .collect();
 
@@ -271,6 +289,9 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
             away_team: None,
             home_result: None,
             away_result: None,
+            home_pen: None,
+            away_pen: None,
+            winner_is_home: None,
         },
         BracketSlot {
             round: "Semi-finals".into(),
@@ -281,6 +302,9 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
             away_team: None,
             home_result: None,
             away_result: None,
+            home_pen: None,
+            away_pen: None,
+            winner_is_home: None,
         },
     ];
 
@@ -293,6 +317,9 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
         away_team: None,
         home_result: None,
         away_result: None,
+        home_pen: None,
+        away_pen: None,
+        winner_is_home: None,
     }];
 
     let final_match = vec![BracketSlot {
@@ -304,6 +331,9 @@ pub fn generate_bracket(group_standings: &[(GroupCode, Vec<Standing>)]) -> Brack
         away_team: None,
         home_result: None,
         away_result: None,
+        home_pen: None,
+        away_pen: None,
+        winner_is_home: None,
     }];
 
     Bracket {
@@ -331,20 +361,11 @@ pub fn apply_knockout_results(
                     let slot = &mut bracket.rounds[round_idx][slot_idx];
                     if h == a {
                         // Draw — may be decided by penalties
-                        match ko.winner_is_home {
-                            Some(true) => {
-                                slot.home_result = Some(1);
-                                slot.away_result = Some(0);
-                            }
-                            Some(false) => {
-                                slot.home_result = Some(0);
-                                slot.away_result = Some(1);
-                            }
-                            None => {
-                                slot.home_result = Some(h);
-                                slot.away_result = Some(a);
-                            }
-                        }
+                        slot.home_result = Some(h);
+                        slot.away_result = Some(a);
+                        slot.home_pen = ko.home_pen;
+                        slot.away_pen = ko.away_pen;
+                        slot.winner_is_home = ko.winner_is_home;
                     } else {
                         slot.home_result = Some(h);
                         slot.away_result = Some(a);
@@ -367,7 +388,12 @@ fn propagate_winners(bracket: &mut Bracket, from_round: usize) {
         if !has_result {
             continue;
         }
-        let home_wins = slot.home_result.unwrap() > slot.away_result.unwrap();
+        let scores_equal = slot.home_result == slot.away_result;
+        let home_wins = if scores_equal {
+            slot.winner_is_home == Some(true)
+        } else {
+            slot.home_result.unwrap() > slot.away_result.unwrap()
+        };
         if home_wins {
             if let Some(ref team) = slot.home_team {
                 winners.insert(format!("W{}", slot.match_number), team.clone());

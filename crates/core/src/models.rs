@@ -55,6 +55,11 @@ pub struct KnockoutMatch {
     pub match_number: u32,
     pub home_goals: Option<u32>,
     pub away_goals: Option<u32>,
+    /// Penalty shootout scores (only set when match was decided by penalties).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub home_pen: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub away_pen: Option<u32>,
     /// When the match was a draw after regulation/extra time and decided by
     /// penalties, this indicates which side won. `None` for matches that
     /// ended in a true draw or were decided in regulation time.
