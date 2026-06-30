@@ -2,9 +2,12 @@ use copa2026_core::*;
 use std::collections::BTreeMap;
 
 const URL: &str = "https://raw.githubusercontent.com/openfootball/worldcup/refs/heads/master/2026--usa/cup.txt";
+const FINALS_URL: &str = "https://raw.githubusercontent.com/openfootball/worldcup/refs/heads/master/2026--usa/cup_finals.txt";
 
 pub async fn fetch_data() -> Result<WorldCupData, String> {
     let client = reqwest::Client::new();
+
+    // Fetch group stage
     let resp = client
         .get(URL)
         .send()
@@ -20,10 +23,24 @@ pub async fn fetch_data() -> Result<WorldCupData, String> {
         .await
         .map_err(|e| format!("Read error: {}", e))?;
 
-    parse_football_txt(&body).map(|groups| WorldCupData {
-        groups,
-        knockout: vec![],
-    })
+    let groups = parse_football_txt(&body)?;
+
+    // Fetch knockout stage
+    let knockout = match client
+        .get(FINALS_URL)
+        .send()
+        .await
+    {
+        Ok(resp) if resp.status().is_success() => {
+            match resp.text().await {
+                Ok(body) => parse_knockout_txt(&body),
+                Err(_) => vec![],
+            }
+        }
+        _ => vec![],
+    };
+
+    Ok(WorldCupData { groups, knockout })
 }
 
 fn parse_football_txt(content: &str) -> Result<BTreeMap<String, Vec<Match>>, String> {
@@ -253,4 +270,123 @@ fn parse_match_line(line: &str) -> Option<(String, String, Option<MatchResult>)>
             }
         }
     }
+}
+
+/// Map round names from cup_finals.txt to our canonical names.
+fn map_knockout_round(name: &str) -> &str {
+    match name {
+        "Round of 32" => "Round of 32",
+        "Round of 16" => "Round of 16",
+        "Quarter-final" => "Quarter-finals",
+        "Semi-final" => "Semi-finals",
+        "Match for third place" => "Third Place",
+        "Final" => "Final",
+        other => other,
+    }
+}
+
+/// Parse knockout match results from cup_finals.txt format.
+fn parse_knockout_txt(content: &str) -> Vec<KnockoutMatch> {
+    let mut results = Vec::new();
+    let mut current_round = String::new();
+
+    // Regex to extract the match number from "(NN)"
+    static MATCH_NUM_RE: std::sync::OnceLock<regex_lite::Regex> = std::sync::OnceLock::new();
+    let match_num_re = MATCH_NUM_RE
+        .get_or_init(|| regex_lite::Regex::new(r"^\s*\((\d+)\)").unwrap());
+
+    // Regex for the first score in a line: "X-Y"
+    static SCORE_RE: std::sync::OnceLock<regex_lite::Regex> = std::sync::OnceLock::new();
+    let score_re = SCORE_RE.get_or_init(|| regex_lite::Regex::new(r"(\d+)-(\d+)").unwrap());
+
+    // Regex for penalty score: "X-Y pen."
+    static PEN_RE: std::sync::OnceLock<regex_lite::Regex> = std::sync::OnceLock::new();
+    let pen_re = PEN_RE.get_or_init(|| regex_lite::Regex::new(r"(\d+)-(\d+)\s+pen\.").unwrap());
+
+    for line in content.lines() {
+        let trimmed = line.trim();
+
+        // Skip empty lines and comments
+        if trimmed.is_empty() || trimmed.starts_with('#') || trimmed.starts_with('=') {
+            continue;
+        }
+
+        // Detect round headers: "▪ Round of 32", "▪ Final", etc.
+        if let Some(rest) = trimmed.strip_prefix('\u{25aa}') {
+            current_round = map_knockout_round(rest.trim()).to_string();
+            continue;
+        }
+
+        // Match lines have match number in parens: "(73) ..."
+        // Openfootball numbers are 73-104; ours are 1-32 (offset 72).
+        if let Some(caps) = match_num_re.captures(trimmed) {
+            let src_num: u32 = caps.get(1).unwrap().as_str().parse().unwrap_or(0);
+            if src_num < 73 {
+                continue;
+            }
+            let match_number = src_num - 72;
+
+            // Strip trailing "## comments" and "@ venue"
+            let after_paren = &trimmed[caps.get(0).unwrap().end()..];
+            let clean = after_paren
+                .split("##")
+                .next()
+                .unwrap_or("")
+                .split("   @")
+                .next()
+                .unwrap_or("")
+                .split("  @")
+                .next()
+                .unwrap_or("")
+                .trim();
+
+            if clean.is_empty() {
+                continue;
+            }
+
+            // Check for "v" (match not yet played)
+            if clean.contains(" v ") {
+                continue;
+            }
+
+            // Find the first score (regulation time)
+            if let Some(first_score) = score_re.find(clean) {
+                let parts: Vec<&str> = first_score.as_str().split('-').collect();
+                if parts.len() != 2 {
+                    continue;
+                }
+                let home_goals: u32 = match parts[0].parse() {
+                    Ok(v) => v,
+                    Err(_) => continue,
+                };
+                let away_goals: u32 = match parts[1].parse() {
+                    Ok(v) => v,
+                    Err(_) => continue,
+                };
+
+                // Check for penalty shootout
+                let winner_is_home = if let Some(pen_cap) = pen_re.captures(clean) {
+                    let ph: u32 = pen_cap.get(1).unwrap().as_str().parse().unwrap_or(0);
+                    let pa: u32 = pen_cap.get(2).unwrap().as_str().parse().unwrap_or(0);
+                    if ph > pa {
+                        Some(true)
+                    } else {
+                        Some(false)
+                    }
+                } else {
+                    None
+                };
+
+                results.push(KnockoutMatch {
+                    round: current_round.clone(),
+                    match_number,
+                    home_goals: Some(home_goals),
+                    away_goals: Some(away_goals),
+                    winner_is_home,
+                });
+            }
+        }
+    }
+
+    results
 }

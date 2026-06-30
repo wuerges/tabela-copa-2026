@@ -329,8 +329,26 @@ pub fn apply_knockout_results(
             if let Some(ko) = results.get(&key) {
                 if let (Some(h), Some(a)) = (ko.home_goals, ko.away_goals) {
                     let slot = &mut bracket.rounds[round_idx][slot_idx];
-                    slot.home_result = Some(h);
-                    slot.away_result = Some(a);
+                    if h == a {
+                        // Draw — may be decided by penalties
+                        match ko.winner_is_home {
+                            Some(true) => {
+                                slot.home_result = Some(1);
+                                slot.away_result = Some(0);
+                            }
+                            Some(false) => {
+                                slot.home_result = Some(0);
+                                slot.away_result = Some(1);
+                            }
+                            None => {
+                                slot.home_result = Some(h);
+                                slot.away_result = Some(a);
+                            }
+                        }
+                    } else {
+                        slot.home_result = Some(h);
+                        slot.away_result = Some(a);
+                    }
                 }
             }
         }

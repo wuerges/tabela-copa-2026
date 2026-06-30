@@ -1246,5 +1246,33 @@
       },
       "date": null
     }
+  ],
+  "knockout": [
+    {
+      "round": "Round of 32",
+      "match_number": 1,
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "round": "Round of 32",
+      "match_number": 2,
+      "home_goals": 1,
+      "away_goals": 1,
+      "winner_is_home": false
+    },
+    {
+      "round": "Round of 32",
+      "match_number": 3,
+      "home_goals": 1,
+      "away_goals": 1,
+      "winner_is_home": false
+    },
+    {
+      "round": "Round of 32",
+      "match_number": 4,
+      "home_goals": 2,
+      "away_goals": 1
+    }
   ]
 }

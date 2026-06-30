@@ -284,7 +284,7 @@ fn test_knockout_full_bracket_to_final() {
         results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            home_goals: Some(1), away_goals: Some(0),
+            home_goals: Some(1), away_goals: Some(0), winner_is_home: None,
         });
     }
 
@@ -307,7 +307,7 @@ fn test_knockout_full_bracket_to_final() {
         results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            home_goals: Some(1), away_goals: Some(0),
+            home_goals: Some(1), away_goals: Some(0), winner_is_home: None,
         });
     }
 
@@ -329,7 +329,7 @@ fn test_knockout_full_bracket_to_final() {
         results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            home_goals: Some(1), away_goals: Some(0),
+            home_goals: Some(1), away_goals: Some(0), winner_is_home: None,
         });
     }
 
@@ -351,7 +351,7 @@ fn test_knockout_full_bracket_to_final() {
         results.insert(key, KnockoutMatch {
             round: slot.round.clone(),
             match_number: slot.match_number,
-            home_goals: Some(1), away_goals: Some(0),
+            home_goals: Some(1), away_goals: Some(0), winner_is_home: None,
         });
     }
 
@@ -374,7 +374,7 @@ fn test_knockout_full_bracket_to_final() {
     results.insert(final_key, KnockoutMatch {
         round: final_slot.round.clone(),
         match_number: final_slot.match_number,
-        home_goals: Some(1), away_goals: Some(0),
+        home_goals: Some(1), away_goals: Some(0), winner_is_home: None,
     });
 
     let bracket_final = apply_knockout_results(&base_bracket, &results);
@@ -386,7 +386,7 @@ fn test_knockout_full_bracket_to_final() {
     results.insert(third_key, KnockoutMatch {
         round: third_place_slot.round.clone(),
         match_number: third_place_slot.match_number,
-        home_goals: Some(0), away_goals: Some(1),
+        home_goals: Some(0), away_goals: Some(1), winner_is_home: None,
     });
 
     let bracket_all = apply_knockout_results(&base_bracket, &results);
@@ -519,6 +519,7 @@ fn test_knockout_mixed_winners_propagate() {
             match_number: slot.match_number,
             home_goals: Some(if i % 2 == 0 { 1 } else { 0 }),
             away_goals: Some(if i % 2 == 0 { 0 } else { 1 }),
+            winner_is_home: None,
         });
     }
 
@@ -638,6 +639,7 @@ fn test_world_cup_data_round_trip() {
             match_number: 32,
             home_goals: Some(3),
             away_goals: Some(1),
+            winner_is_home: None,
         }],
     };
     let json = serde_json::to_string(&data).unwrap();

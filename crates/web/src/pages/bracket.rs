@@ -120,6 +120,7 @@ fn EditableApp(initial: PageData) -> impl IntoView {
                     match_number,
                     home_goals: Some(if is_home { 1 } else { 0 }),
                     away_goals: Some(if is_home { 0 } else { 1 }),
+                    winner_is_home: None,
                 },
             );
         });

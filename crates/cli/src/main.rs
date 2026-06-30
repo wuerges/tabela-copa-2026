@@ -61,7 +61,12 @@ fn run(cli: Cli, path: &std::path::Path) -> Result<(), String> {
                 let data = fetch::fetch_data().await?;
                 save_data(&data, &path.to_string_lossy())?;
                 let total: usize = data.groups.values().map(|v| v.len()).sum();
-                println!("Fetched {total} matches across {} groups.", data.groups.len());
+                let ko_count = data.knockout.len();
+                if ko_count > 0 {
+                    println!("Fetched {total} group matches across {} groups, and {ko_count} knockout results.", data.groups.len());
+                } else {
+                    println!("Fetched {total} group matches across {} groups.", data.groups.len());
+                }
                 Ok(())
             })
         }
