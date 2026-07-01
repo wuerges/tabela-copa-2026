@@ -61,7 +61,6 @@ jobs:
           else
             git add data.json
             git commit -m "chore: update match results"
-            git pull --rebase origin main
             git push
             echo "Committed and pushed updated data.json"
           fi
