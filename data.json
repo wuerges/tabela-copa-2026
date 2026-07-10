@@ -1409,6 +1409,12 @@
       "match_number": 25,
       "home_goals": 2,
       "away_goals": 0
+    },
+    {
+      "round": "Quarter-finals",
+      "match_number": 26,
+      "home_goals": 2,
+      "away_goals": 1
     }
   ]
 }
