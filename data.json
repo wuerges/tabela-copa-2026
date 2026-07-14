@@ -1427,6 +1427,12 @@
       "match_number": 28,
       "home_goals": 3,
       "away_goals": 1
+    },
+    {
+      "round": "Semi-finals",
+      "match_number": 29,
+      "home_goals": 0,
+      "away_goals": 2
     }
   ]
 }
