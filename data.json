@@ -1439,6 +1439,12 @@
       "match_number": 30,
       "home_goals": 1,
       "away_goals": 2
+    },
+    {
+      "round": "Third Place",
+      "match_number": 31,
+      "home_goals": 4,
+      "away_goals": 6
     }
   ]
 }
