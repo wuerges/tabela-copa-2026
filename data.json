@@ -1445,6 +1445,12 @@
       "match_number": 31,
       "home_goals": 4,
       "away_goals": 6
+    },
+    {
+      "round": "Final",
+      "match_number": 32,
+      "home_goals": 1,
+      "away_goals": 0
     }
   ]
 }
